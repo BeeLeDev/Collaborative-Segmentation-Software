@@ -8,7 +8,7 @@ General Update and Intro
 ========================
 
 • Teams assembled and introduced, selected Aiden Remington as our project leader
-• Talked to our TA and the Professor for suggestions on tools we can use and were suggest NiiVue or Cornerstone JS
+• Talked to our TA and the Professor for suggestions on tools we can use and were suggested NiiVue and Cornerstone JS
 • Created Github repo: https://github.com/oopsuwu/MGH
 • Researched libraries that will help us run quality checks on the 3D/4D medical images such as Nibabel, dicom2nii, nii2dcm
 
@@ -20,12 +20,12 @@ We need to create an online visualization tool for medical images.
 The visualization tool will:
 • Handle files ranging from 200MB to - 4.5GB at the same time
 • Efficiently quality-check 500+ 3D/4D medical volumes
-• Support manual annotations 3D image volumes
+• Support manual annotations on 3D image volumes
 • Support a single and multi-user collaborative setting
 
 Technologies Proposed:
 • NiiVue to create the web-based visualization tool
-• Using python language with medical imaging libraries to run quality checks
+• Using the python language with medical imaging libraries
 
 Current Questions / Problems / Something you need
 =================================================
