@@ -24,7 +24,7 @@ The visualization tool will:
 • Support a single and multi-user collaborative setting
 
 Technologies Proposed:
-• NiiVue to create the web-based visualization tool
+• NiiVue or Cornerstone JS to create the web-based visualization tool
 • Using the python language with medical imaging libraries
 
 Current Questions / Problems / Something you need
