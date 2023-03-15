@@ -13,7 +13,7 @@ function Viewer({ imageUrl, nvObj }) {
     userAuthentication: { endpoint: "http://x.babymri.org/auth.php" },
     authEndpoint: "http://x.babymri.org/auth.php"
   }))
-  const [channel, setChannel] = useState()
+ const [channel, setChannel] = useState(pusher.subscribe('private-' + channelname))
   const canvas = useRef();
   let prevPos = { offsetX: 0, offsetY: 0 };
   let line = [];
@@ -22,10 +22,6 @@ function Viewer({ imageUrl, nvObj }) {
   let userId = v4();
 
 
-  useEffect(() => {
-    let channel1 = pusher.subscribe('private-' + channelname);
-    setChannel(channel1);
-  }, [])
 
   /*  const handleLocationChange = (data) => {
      document.getElementById('location').innerHTML = '&nbsp;&nbsp;' + data.string;
