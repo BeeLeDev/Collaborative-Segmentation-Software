@@ -134,144 +134,116 @@
 
 <script>
   //import { Niivue } from './niivue.js'
-    position = null;
-    last_drawing = [];
-    label = 1
-    window.onload = function () {
-      var element = document.getElementById('gl1');
-      const isTouchDevice = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0))
-      var isFilled = true;
+  position = null;
+  last_drawing = [];
+  label = 1
+  window.onload = function () {
+    var element = document.getElementById('gl1');
+    const isTouchDevice = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0))
+    var isFilled = true;
 
-      //instance of niivue
-      var nv1 = new niivue.Niivue({});
-      nv1.attachToCanvas(element);
-      nv1.setSliceType(nv1.sliceTypeCoronal);
+    //instance of niivue
+    var nv1 = new niivue.Niivue({});
+    nv1.attachToCanvas(element);
+    nv1.setSliceType(nv1.sliceTypeCoronal);
 
-      data = [{
-        url: 'http://34.123.230.212/FLAIR.nii.gz',
-        colorMap: 'gray',
-        opacity: 1, 
-        visible: true
-      }];
-      nv1.loadVolumes(data);
-      nv1.onLocationChange = function (e) {
-        position = e['vox'];
-        console.log("setting pos",position)
-      }.bind(this);
-  
-      element.onmousemove = function (e) {
-        if (!e.ctrlKey) return;
-        var value = nv1.opts.penValue; // TODO different colors
+    data = [{
+      url: 'http://34.123.230.212/FLAIR.nii.gz',
+      colorMap: 'gray',
+      opacity: 1,
+      visible: true
+    }];
+    nv1.loadVolumes(data);
+    nv1.onLocationChange = function (e) {
+      position = e['vox'];
+      console.log("setting pos", position)
+    }.bind(this);
 
-        last_drawing.push({ 'x': position[0], 'y': position[1], 'z': position[2], 'value': value }); // TODO catch duplicates
-        draw(position[0], position[1], position[2], value);
-      };
+    element.onmousemove = function (e) {
+      if (!e.ctrlKey) return;
+      var value = nv1.opts.penValue; // TODO different colors
+
+      last_drawing.push({ 'x': position[0], 'y': position[1], 'z': position[2], 'value': value }); // TODO catch duplicates
+      draw(position[0], position[1], position[2], value);
+    };
 
 
-      function draw(x, y, z, label) {
+    // TODO: have the drawings be shown while drawing ONLY for the user who is currently draw, otherwise they will have to remember each spot they drew on 
 
-        // we just enable drawing for a second to create the array
-        if (!nv1.opts.drawingEnabled) {
-          nv1.setDrawingEnabled(1);
+    // NOTE: because we use our own draw function, the pen fill does not work as there is no data given to nv1 using NiiVue's draw function meaning the Fill functionality can't use any data as none were given (this is an assumption)
+    function draw(x, y, z, label) {
+
+      // we just enable drawing for a second to create the array
+      if (!nv1.opts.drawingEnabled) {
+        nv1.setDrawingEnabled(1);
+      }
+      // but then disable it
+      nv1.setDrawingEnabled(0);
+
+      let dx = nv1.back.dims[1];
+      let dy = nv1.back.dims[2];
+      let dz = nv1.back.dims[3];
+
+      nv1.drawBitmap[x + y * dx + z * dx * dy] = label;
+
+    };
+
+    
+    element.onmouseup = function (e) {
+
+      // DEBUG: Fill functionality
+      //drawPenFilled();
+      //console.log("fill: " + nv1.drawPenFillPts);
+
+      nv1.refreshDrawing();
+
+      console.log(last_drawing, "last drawing")
+      //send via pusher
+
+      LINK.trigger('client-receive', { 'drawing': last_drawing });
+
+      last_drawing = [];
+
+    };
+    connect();
+
+
+    function connect() {
+
+      var channelname = 'cs410';
+
+      console.log('Linking via channel ' + channelname + '...');
+
+      // Pusher.logToConsole = true; // for debugging
+
+      pusher = new Pusher('bb9db0457c7108272899', {
+        cluster: 'us2',
+        userAuthentication: { endpoint: "https://x.babymri.org/auth.php" },
+        authEndpoint: "https://x.babymri.org/auth.php"
+      });
+
+      channel = 'private-' + channelname;
+      LINK = pusher.subscribe(channel);
+
+      LINK.bind('client-receive', function (data) {
+
+
+        for (var i = 0; i < data['drawing'].length; i++) {
+
+          x = data['drawing'][i]['x'];
+          y = data['drawing'][i]['y'];
+          z = data['drawing'][i]['z'];
+          value = data['drawing'][i]['value'];
+
+          draw(x, y, z, value);
+          nv1.refreshDrawing();
+
+
         }
-        // but then disable it
-        nv1.setDrawingEnabled(0);
 
-        let dx = nv1.back.dims[1];
-        let dy = nv1.back.dims[2];
-        let dz = nv1.back.dims[3];
+      });
 
-        nv1.drawBitmap[x + y * dx + z * dx * dy] = label;
-
-      };
-
-element.onmouseup = function(e) {
-
-nv1.refreshDrawing();
-console.log(last_drawing,"last drawing")
-//send via pusher
-
-LINK.trigger('client-receive', {'drawing':last_drawing});
-
-last_drawing = [];
-
-};
-connect();
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  function connect() {
-
-var channelname = 'cs410';
-
-console.log('Linking via channel ' + channelname + '...');
-
-// Pusher.logToConsole = true; // for debugging
-
-pusher = new Pusher('bb9db0457c7108272899', {
-  cluster: 'us2',
-  userAuthentication: { endpoint: "https://x.babymri.org/auth.php"},
-  authEndpoint: "https://x.babymri.org/auth.php"
-});
-
-channel = 'private-' + channelname;
-LINK = pusher.subscribe(channel);
-
-LINK.bind('client-receive', function(data) {
-
-
-    for (var i=0; i<data['drawing'].length; i++) {
-
-        x = data['drawing'][i]['x'];
-        y = data['drawing'][i]['y'];
-        z = data['drawing'][i]['z'];
-        value = data['drawing'][i]['value'];
-
-        draw(x, y, z, value);
-        nv1.refreshDrawing();
-
-
-    }
-
-});
-
-};
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  function toggleGroup(id) {
-    let buttons = document.getElementsByClassName("viewBtn")
-    let char0 = id.charAt(0)
-    for (let i = 0; i < buttons.length; i++) {
-      if (buttons[i].id.charAt(0) !== char0)
-        continue
-      buttons[i].classList.remove("dropdown-item-checked")
-      if (buttons[i].id === id)
-        buttons[i].classList.add("dropdown-item-checked")
-    }
-  } // toggleGroup()
+    };
 
 
 
@@ -279,214 +251,370 @@ LINK.bind('client-receive', function(data) {
 
 
 
-
-
-  function onButtonClick(event) {
-    if (isTouchDevice) {
-      console.log('Touch device: click menu to close menu')
-      /*var el = this.parentNode
-      el.style.display = "none"
-      setTimeout(function() { //close menu
-        //el.style.removeProperty("display")
-        //el.style.display = "block"
-      }, 500)*/
-    }
-    if (event.target.id === "SaveDraw") {
-      nv1.saveImage('draw.nii', true)
-      return
-    }
-    if (event.target.id === "SaveBitmap") {
-      nv1.saveScene('ScreenShot.png')
-      return
-    }
-    if (event.target.id === "ShowHeader") {
-      alert(nv1.volumes[0].hdr.toFormattedString())
-      return
-    }
-    if (event.target.id === "Colorbar") {
-      nv1.opts.isColorbar = !nv1.opts.isColorbar
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      nv1.drawScene()
-      return
-    }
-    if (event.target.id === "Radiological") {
-      nv1.opts.isRadiologicalConvention = !nv1.opts.isRadiologicalConvention
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      nv1.drawScene()
-      return
-    }
-    if (event.target.id === "Crosshair") {
-      nv1.opts.show3Dcrosshair = !nv1.opts.show3Dcrosshair
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      nv1.drawScene()
-    }
-    if (event.target.id === "ClipPlane") {
-      if (nv1.scene.clipPlaneDepthAziElev[0] > 1)
-        nv1.setClipPlane([0.3, 270, 0])
-      else
-        nv1.setClipPlane([2, 270, 0])
-      nv1.drawScene()
-      return
-    }
-    if (event.target.id.charAt(0) === '!') { // set color scheme
-      nv1.volumes[0].colorMap = event.target.id.substr(1)
-      nv1.updateGLVolume()
-      toggleGroup(event.target.id)
-      return
-    }
-    if (event.target.id === "Undo") {
-      nv1.drawUndo()
-    }
-    if (event.target.id.charAt(0) === '|') { //sliceType
-      if (event.target.id === "|Slicer")
-        nv1.setDrawColormap("_slicer3d")
-      else
-        nv1.setDrawColormap("_itksnap")
-    }
-    if (event.target.id.charAt(0) === '@') { //sliceType
-      if (event.target.id === "@Off")
-        nv1.setDrawingEnabled(false)
-      else
-        nv1.setDrawingEnabled(true)
-      if (event.target.id === "@Erase")
-        nv1.setPenValue(0, isFilled);
-      if (event.target.id === "@Red")
-        nv1.setPenValue(1, isFilled);
-      if (event.target.id === "@Green"){
-        nv1.setPenValue(2, isFilled);
+    // TODO: convert this to use the data from local, instead of using NV1 since we don't use their drawing functions which have the data they need
+    function drawPenFilled() {
+      let nPts = nv1.drawPenFillPts.length;
+      if (nPts < 2) {
+        //can not fill single line
+        nv1.drawPenFillPts = [];
+        return;
       }
-      if (event.target.id === "@Blue")
-        nv1.setPenValue(3, isFilled);
-      if (event.target.id === "@Yellow")
-        nv1.setPenValue(4, isFilled);
-      if (event.target.id === "@Cyan")
-        nv1.setPenValue(5, isFilled);
-      if (event.target.id === "@Purple")
-        nv1.setPenValue(6, isFilled);
-      if (event.target.id === "@Cluster")
-        nv1.setPenValue(-0, isFilled);
-      toggleGroup(event.target.id)
-    } //Draw Color
-    if (event.target.id === "Growcut")
-      nv1.drawGrowCut();
-    if (event.target.id === "Translucent") {
-      if (nv1.drawOpacity > 0.75)
-        nv1.drawOpacity = 0.5
-      else
-        nv1.drawOpacity = 1.0;
-      nv1.drawScene()
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id === "DrawOtsu") {
-      let levels = parseInt(prompt("Segmentation classes (2..4)", "3"));
-      nv1.drawOtsu(levels);
-    }
-    if (event.target.id === "RemoveHaze") {
-      let level = parseInt(prompt("Remove Haze (1..5)", "5"));
-      nv1.removeHaze(level);
-    }
-    if (event.target.id === "DrawFilled") {
-      isFilled = !isFilled;
-      nv1.setPenValue(nv1.opts.penValue, isFilled);
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id === "DrawOverwrite") {
-      nv1.drawFillOverwrites = !nv1.drawFillOverwrites;
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id.charAt(0) === '|') { //sliceType
-      if (event.target.id === "|Axial")
-        nv1.setSliceType(nv1.sliceTypeAxial)
-      if (event.target.id === "|Coronal")
-        nv1.setSliceType(nv1.sliceTypeCoronal)
-      if (event.target.id === "|Sagittal")
-        nv1.setSliceType(nv1.sliceTypeSagittal)
-      if (event.target.id === "|Render")
-        nv1.setSliceType(nv1.sliceTypeRender)
-      if (event.target.id === "|MultiPlanar") {
-        nv1.opts.multiplanarForceRender = false
-        nv1.setSliceType(nv1.sliceTypeMultiplanar)
+      //do fill in 2D, based on axial (0), coronal (1) or sagittal drawing (2
+      let axCorSag = nv1.drawPenAxCorSag;
+      //axial is x(0)*y(1) horizontal*vertical
+      let h = 0;
+      let v = 1;
+      if (axCorSag === 1) v = 2; //coronal is x(0)*z(0)
+      if (axCorSag === 2) {
+        //sagittal is y(1)*z(2)
+        h = 1;
+        v = 2;
       }
-      if (event.target.id === "|MultiPlanarRender") {
-        nv1.opts.multiplanarForceRender = true
-        nv1.setSliceType(nv1.sliceTypeMultiplanar)
+      let dims2D = [nv1.back.dims[h + 1], nv1.back.dims[v + 1]]; //+1: dims indexed from 0!
+      //create bitmap of horizontal*vertical voxels:
+      var img2D = new Uint8Array(dims2D[0] * dims2D[1]);
+      var pen = 1; //do not use nv1.opts.penValue, as "erase" is zero
+      function drawLine2D(ptA, ptB, penValue) {
+        let dx = Math.abs(ptA[0] - ptB[0]);
+        let dy = Math.abs(ptA[1] - ptB[1]);
+        img2D[ptA[0] + ptA[1] * dims2D[0]] = pen;
+        img2D[ptB[0] + ptB[1] * dims2D[0]] = pen;
+        let xs = -1;
+        let ys = -1;
+        if (ptB[0] > ptA[0]) xs = 1;
+        if (ptB[1] > ptA[1]) ys = 1;
+        let x1 = ptA[0];
+        let y1 = ptA[1];
+        let x2 = ptB[0];
+        let y2 = ptB[1];
+        if (dx >= dy) {
+          //Driving axis is X-axis"
+          let p1 = 2 * dy - dx;
+          while (x1 != x2) {
+            x1 += xs;
+            if (p1 >= 0) {
+              y1 += ys;
+              p1 -= 2 * dx;
+            }
+            p1 += 2 * dy;
+            img2D[x1 + y1 * dims2D[0]] = pen;
+          } //while
+        } else {
+          //Driving axis is Y-axis"
+          let p1 = 2 * dx - dy;
+          while (y1 != y2) {
+            y1 += ys;
+            if (p1 >= 0) {
+              x1 += xs;
+              p1 -= 2 * dy;
+            }
+            p1 += 2 * dx;
+            img2D[x1 + y1 * dims2D[0]] = pen;
+          } //while
+        }
       }
-      toggleGroup(event.target.id)
-    } //sliceType
-    if (event.target.id === "WorldSpace") {
-      nv1.setSliceMM(!nv1.opts.isSliceMM);
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id === "Interpolate") {
-      nv1.setInterpolation(!nv1.opts.isNearestInterpolation)
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id === "Left")
-      nv1.moveCrosshairInVox(-1, 0, 0)
-    if (event.target.id === "Right")
-      nv1.moveCrosshairInVox(1, 0, 0)
-    if (event.target.id === "Posterior")
-      nv1.moveCrosshairInVox(0, -1, 0)
-    if (event.target.id === "Anterior")
-      nv1.moveCrosshairInVox(0, 1, 0)
-    if (event.target.id === "Inferior")
-      nv1.moveCrosshairInVox(0, 0, -1)
-    if (event.target.id === "Superior")
-      nv1.moveCrosshairInVox(0, 0, 1)
-    if (event.target.id === "BackColor") {
-      if (nv1.opts.backColor[0] < 0.5)
-        nv1.opts.backColor = [1, 1, 1, 1]
-      else
-        nv1.opts.backColor = [0, 0, 0, 1]
-      nv1.drawScene()
-      event.srcElement.classList.toggle("dropdown-item-checked")
-      return
-    }
-    if (event.target.id.charAt(0) === '^') { //drag mode
-      let s = event.target.id.substr(1)
-      switch (s) {
-        case "none":
-          nv1.opts.dragMode = nv1.dragModes.none
-          break
-        case "contrast":
-          nv1.opts.dragMode = nv1.dragModes.contrast
-          break
-        case "measurement":
-          nv1.opts.dragMode = nv1.dragModes.measurement
-          break
-        case "pan":
-          nv1.opts.dragMode = nv1.dragModes.pan
-          break
+      let startPt = [nv1.drawPenFillPts[0][h], nv1.drawPenFillPts[0][v]];
+      let prevPt = startPt;
+      for (let i = 1; i < nPts; i++) {
+        let pt = [nv1.drawPenFillPts[i][h], nv1.drawPenFillPts[i][v]];
+        drawLine2D(prevPt, pt);
+        prevPt = pt;
       }
-      toggleGroup(event.target.id)
-    } //drag mode
-    if (event.target.id === "_mesh") {
-      volumeList1[0].url = '../demos/images//mni152.nii.gz'
-      nv1.loadVolumes(volumeList1)
-      nv1.loadMeshes([
-        { url: "../demos/images/BrainMesh_ICBM152.lh.mz3", rgba255: [200, 162, 255, 255] },
-        { url: "../demos/images/dpsv.trx", rgba255: [255, 255, 255, 255] },
-      ])
-      toggleGroup(event.target.id)
-    } else if (event.target.id.charAt(0) === '_') { //example image
-      nv1.meshes = [] //close open meshes
-      let root = '../demos/images/'
-      let s = event.target.id.substr(1)
-      let img = root + s + '.nii.gz'
-      console.log('Loading ' + img)
-      volumeList1[0].url = img
-      nv1.loadVolumes(volumeList1)
-      toggleGroup(event.target.id)
-      nv1.updateGLVolume()
-    } //example image
-  } // onButtonClick()
-  var buttons = document.getElementsByClassName("viewBtn")
-  for (let i = 0; i < buttons.length; i++)
-    buttons[i].addEventListener("click", onButtonClick, false)
+      drawLine2D(startPt, prevPt); //close drawing
+      //flood fill
+      let seeds = [];
+      function setSeed(pt) {
+        if (pt[0] < 0 || pt[1] < 0 || pt[0] >= dims2D[0] || pt[1] >= dims2D[1])
+          return;
+        let pxl = pt[0] + pt[1] * dims2D[0];
+        if (img2D[pxl] !== 0) return; //not blank
+        seeds.push(pt);
+        img2D[pxl] = 2;
+      }
+      // https://en.wikipedia.org/wiki/Flood_fill
+      // first seed all edges
+      //bottom row
+      for (let i = 0; i < dims2D[0]; i++) setSeed([i, 0]);
+      //top row
+      for (let i = 0; i < dims2D[0]; i++) setSeed([i, dims2D[1] - 1]);
+      //left column
+      for (let i = 0; i < dims2D[1]; i++) setSeed([0, i]);
+      //right columns
+      for (let i = 0; i < dims2D[1]; i++) setSeed([dims2D[0] - 1, i]);
+      //now retire first in first out
+      while (seeds.length > 0) {
+        //always remove one seed, plant 0..4 new ones
+        let seed = seeds.shift();
+        setSeed([seed[0] - 1, seed[1]]);
+        setSeed([seed[0] + 1, seed[1]]);
+        setSeed([seed[0], seed[1] - 1]);
+        setSeed([seed[0], seed[1] + 1]);
+      }
+      //all voxels with value of zero have no path to edges
+      //insert surviving pixels from 2D bitmap into 3D bitmap
+      pen = nv1.opts.penValue;
+      let slice = nv1.drawPenFillPts[0][3 - (h + v)];
+      if (axCorSag === 0) {
+        //axial
+        let offset = slice * dims2D[0] * dims2D[1];
+        for (let i = 0; i < dims2D[0] * dims2D[1]; i++) {
+          if (img2D[i] !== 2) nv1.drawBitmap[i + offset] = pen;
+        }
+      } else {
+        let xStride = 1; //coronal: horizontal LR pixels contiguous
+        let yStride = nv1.back.dims[1] * nv1.back.dims[2]; //coronal: vertical is slice
+        let zOffset = slice * nv1.back.dims[1]; //coronal: slice is number of columns
+        if (axCorSag === 2) {
+          //sagittal
+          xStride = nv1.back.dims[1];
+          zOffset = slice;
+        }
+        let i = 0;
+        for (let y = 0; y < dims2D[1]; y++) {
+          for (let x = 0; x < dims2D[0]; x++) {
+            if (img2D[i] !== 2)
+              nv1.drawBitmap[x * xStride + y * yStride + zOffset] = pen;
+            i++;
+          } // x column
+        } //y row
+      } //not axial
+      //nv1.drawUndoBitmaps[nv1.currentDrawUndoBitmap]
+      if (
+        !nv1.drawFillOverwrites &&
+        nv1.drawUndoBitmaps[nv1.currentDrawUndoBitmap].length > 0
+      ) {
+        let nv = nv1.drawBitmap.length;
+        let bmp = decodeRLE(nv1.drawUndoBitmaps[nv1.currentDrawUndoBitmap], nv);
+        for (let i = 0; i < nv; i++) {
+          if (bmp[i] === 0) continue;
+          nv1.drawBitmap[i] = bmp[i];
+        }
+      }
+      nv1.drawPenFillPts = [];
+      nv1.drawAddUndoBitmap();
+      nv1.refreshDrawing(false);
+    }; // drawPenFilled()
+
+
+    function toggleGroup(id) {
+      let buttons = document.getElementsByClassName("viewBtn")
+      let char0 = id.charAt(0)
+      for (let i = 0; i < buttons.length; i++) {
+        if (buttons[i].id.charAt(0) !== char0)
+          continue
+        buttons[i].classList.remove("dropdown-item-checked")
+        if (buttons[i].id === id)
+          buttons[i].classList.add("dropdown-item-checked")
+      }
+    } // toggleGroup()
+
+
+    function onButtonClick(event) {
+      if (isTouchDevice) {
+        console.log('Touch device: click menu to close menu')
+        /*var el = this.parentNode
+        el.style.display = "none"
+        setTimeout(function() { //close menu
+          //el.style.removeProperty("display")
+          //el.style.display = "block"
+        }, 500)*/
+      }
+      if (event.target.id === "SaveDraw") {
+        nv1.saveImage('draw.nii', true)
+        return
+      }
+      if (event.target.id === "SaveBitmap") {
+        nv1.saveScene('ScreenShot.png')
+        return
+      }
+      if (event.target.id === "ShowHeader") {
+        alert(nv1.volumes[0].hdr.toFormattedString())
+        return
+      }
+      if (event.target.id === "Colorbar") {
+        nv1.opts.isColorbar = !nv1.opts.isColorbar
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        nv1.drawScene()
+        return
+      }
+      if (event.target.id === "Radiological") {
+        nv1.opts.isRadiologicalConvention = !nv1.opts.isRadiologicalConvention
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        nv1.drawScene()
+        return
+      }
+      if (event.target.id === "Crosshair") {
+        nv1.opts.show3Dcrosshair = !nv1.opts.show3Dcrosshair
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        nv1.drawScene()
+      }
+      if (event.target.id === "ClipPlane") {
+        if (nv1.scene.clipPlaneDepthAziElev[0] > 1)
+          nv1.setClipPlane([0.3, 270, 0])
+        else
+          nv1.setClipPlane([2, 270, 0])
+        nv1.drawScene()
+        return
+      }
+      if (event.target.id.charAt(0) === '!') { // set color scheme
+        nv1.volumes[0].colorMap = event.target.id.substr(1)
+        nv1.updateGLVolume()
+        toggleGroup(event.target.id)
+        return
+      }
+      if (event.target.id === "Undo") {
+        nv1.drawUndo()
+      }
+      if (event.target.id.charAt(0) === '|') { //sliceType
+        if (event.target.id === "|Slicer")
+          nv1.setDrawColormap("_slicer3d")
+        else
+          nv1.setDrawColormap("_itksnap")
+      }
+      if (event.target.id.charAt(0) === '@') { //sliceType
+        if (event.target.id === "@Off")
+          nv1.setDrawingEnabled(false)
+        else
+          nv1.setDrawingEnabled(true)
+        if (event.target.id === "@Erase")
+          nv1.setPenValue(0, isFilled);
+        if (event.target.id === "@Red")
+          nv1.setPenValue(1, isFilled);
+        if (event.target.id === "@Green") {
+          nv1.setPenValue(2, isFilled);
+        }
+        if (event.target.id === "@Blue")
+          nv1.setPenValue(3, isFilled);
+        if (event.target.id === "@Yellow")
+          nv1.setPenValue(4, isFilled);
+        if (event.target.id === "@Cyan")
+          nv1.setPenValue(5, isFilled);
+        if (event.target.id === "@Purple")
+          nv1.setPenValue(6, isFilled);
+        if (event.target.id === "@Cluster")
+          nv1.setPenValue(-0, isFilled);
+        toggleGroup(event.target.id)
+      } //Draw Color
+      if (event.target.id === "Growcut")
+        nv1.drawGrowCut();
+      if (event.target.id === "Translucent") {
+        if (nv1.drawOpacity > 0.75)
+          nv1.drawOpacity = 0.5
+        else
+          nv1.drawOpacity = 1.0;
+        nv1.drawScene()
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id === "DrawOtsu") {
+        let levels = parseInt(prompt("Segmentation classes (2..4)", "3"));
+        nv1.drawOtsu(levels);
+      }
+      if (event.target.id === "RemoveHaze") {
+        let level = parseInt(prompt("Remove Haze (1..5)", "5"));
+        nv1.removeHaze(level);
+      }
+      if (event.target.id === "DrawFilled") {
+        isFilled = !isFilled;
+        nv1.setPenValue(nv1.opts.penValue, isFilled);
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id === "DrawOverwrite") {
+        nv1.drawFillOverwrites = !nv1.drawFillOverwrites;
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id.charAt(0) === '|') { //sliceType
+        if (event.target.id === "|Axial")
+          nv1.setSliceType(nv1.sliceTypeAxial)
+        if (event.target.id === "|Coronal")
+          nv1.setSliceType(nv1.sliceTypeCoronal)
+        if (event.target.id === "|Sagittal")
+          nv1.setSliceType(nv1.sliceTypeSagittal)
+        if (event.target.id === "|Render")
+          nv1.setSliceType(nv1.sliceTypeRender)
+        if (event.target.id === "|MultiPlanar") {
+          nv1.opts.multiplanarForceRender = false
+          nv1.setSliceType(nv1.sliceTypeMultiplanar)
+        }
+        if (event.target.id === "|MultiPlanarRender") {
+          nv1.opts.multiplanarForceRender = true
+          nv1.setSliceType(nv1.sliceTypeMultiplanar)
+        }
+        toggleGroup(event.target.id)
+      } //sliceType
+      if (event.target.id === "WorldSpace") {
+        nv1.setSliceMM(!nv1.opts.isSliceMM);
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id === "Interpolate") {
+        nv1.setInterpolation(!nv1.opts.isNearestInterpolation)
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id === "Left")
+        nv1.moveCrosshairInVox(-1, 0, 0)
+      if (event.target.id === "Right")
+        nv1.moveCrosshairInVox(1, 0, 0)
+      if (event.target.id === "Posterior")
+        nv1.moveCrosshairInVox(0, -1, 0)
+      if (event.target.id === "Anterior")
+        nv1.moveCrosshairInVox(0, 1, 0)
+      if (event.target.id === "Inferior")
+        nv1.moveCrosshairInVox(0, 0, -1)
+      if (event.target.id === "Superior")
+        nv1.moveCrosshairInVox(0, 0, 1)
+      if (event.target.id === "BackColor") {
+        if (nv1.opts.backColor[0] < 0.5)
+          nv1.opts.backColor = [1, 1, 1, 1]
+        else
+          nv1.opts.backColor = [0, 0, 0, 1]
+        nv1.drawScene()
+        event.srcElement.classList.toggle("dropdown-item-checked")
+        return
+      }
+      if (event.target.id.charAt(0) === '^') { //drag mode
+        let s = event.target.id.substr(1)
+        switch (s) {
+          case "none":
+            nv1.opts.dragMode = nv1.dragModes.none
+            break
+          case "contrast":
+            nv1.opts.dragMode = nv1.dragModes.contrast
+            break
+          case "measurement":
+            nv1.opts.dragMode = nv1.dragModes.measurement
+            break
+          case "pan":
+            nv1.opts.dragMode = nv1.dragModes.pan
+            break
+        }
+        toggleGroup(event.target.id)
+      } //drag mode
+      if (event.target.id === "_mesh") {
+        volumeList1[0].url = '../demos/images//mni152.nii.gz'
+        nv1.loadVolumes(volumeList1)
+        nv1.loadMeshes([
+          { url: "../demos/images/BrainMesh_ICBM152.lh.mz3", rgba255: [200, 162, 255, 255] },
+          { url: "../demos/images/dpsv.trx", rgba255: [255, 255, 255, 255] },
+        ])
+        toggleGroup(event.target.id)
+      } else if (event.target.id.charAt(0) === '_') { //example image
+        nv1.meshes = [] //close open meshes
+        let root = '../demos/images/'
+        let s = event.target.id.substr(1)
+        let img = root + s + '.nii.gz'
+        console.log('Loading ' + img)
+        volumeList1[0].url = img
+        nv1.loadVolumes(volumeList1)
+        toggleGroup(event.target.id)
+        nv1.updateGLVolume()
+      } //example image
+    } // onButtonClick()
+    var buttons = document.getElementsByClassName("viewBtn")
+    for (let i = 0; i < buttons.length; i++)
+      buttons[i].addEventListener("click", onButtonClick, false)
   }
 </script>
