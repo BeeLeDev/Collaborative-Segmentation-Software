@@ -143,6 +143,7 @@
     LINK.bind('client-receive', function (data) {
 
       let startPt = [data['drawing'][0][0], data['drawing'][0][1], data['drawing'][0][2]]
+      let constStartpt = startPt;
       value = data['label'];
       for (var i = 1; i < data['drawing'].length; i++) {
 
@@ -157,6 +158,9 @@
 
 
       }
+      //coonectomg the first and last point 
+      drawFilled(constStartpt, endpoint, value);
+
 
     });
 
