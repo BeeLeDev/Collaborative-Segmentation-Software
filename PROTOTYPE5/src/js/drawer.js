@@ -60,16 +60,34 @@ Drawer.prototype.draw = function () {
 
 };
 
-Drawer.prototype.drawFilled = function (ptA, ptB, label, newNvObj) {
-    if (!newNvObj.opts.drawingEnabled) {
-        newNvObj.setDrawingEnabled(true);
+Drawer.prototype.drawFilled = function (ptA, ptB, label, nv) {
+    if (!nv.opts.drawingEnabled) {
+        nv.setDrawingEnabled(true);
     }
-    //newNvObj.setDrawingEnabled(false);
-    newNvObj.drawPenLine(ptA, ptB, label)
-    console.log(newNvObj.drawPenFillPts)
-    newNvObj.refreshDrawing(true);
+    //nv.setDrawingEnabled(false);
+    nv.drawPenLine(ptA, ptB, label)
+    console.log(nv.drawPenFillPts)
+    nv.refreshDrawing(true);
 }
 
+Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
+    let startPt = [data['drawing'][0][0], data['drawing'][0][1], data['drawing'][0][2]]
+    let constStartpt = startPt;
+    let value = data['label'];
+    for (var i = 1; i < data['drawing'].length; i++) {
+
+        let x = data['drawing'][i][0];
+        let y = data['drawing'][i][1];
+        let z = data['drawing'][i][2];
+        var endpoint = [x, y, z]
+        currentThis.drawFilled(startPt, endpoint, value, currentThis.nv)
+        startPt = endpoint;
+        currentThis.nv.refreshDrawing(true);
+    }
+    //coonectomg the first and last point 
+    currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
+    currentThis.nv.setDrawingEnabled(false);
+}
 Drawer.prototype.connect = function () {
 
     var channelname = 'cs410';
@@ -86,30 +104,10 @@ Drawer.prototype.connect = function () {
 
     var channel = 'private-' + channelname;
     LINK = pusher.subscribe(channel);
-    let drawtoSubscibers = this.drawFilled;
-    let newNvObj = this.nv
+    let drawtoSubscibers = this.drawOnPusherTrigger;
+    let currentThis = this;
     LINK.bind('client-receive', function (data) {
-
-        let startPt = [data['drawing'][0][0], data['drawing'][0][1], data['drawing'][0][2]]
-        let constStartpt = startPt;
-        let value = data['label'];
-        for (var i = 1; i < data['drawing'].length; i++) {
-
-            let x = data['drawing'][i][0];
-            let y = data['drawing'][i][1];
-            let z = data['drawing'][i][2];
-            var endpoint = [x, y, z]
-            drawtoSubscibers(startPt, endpoint, value, newNvObj)
-            //this.drawFilled(startPt, endpoint, value);
-            startPt = endpoint;
-            newNvObj.refreshDrawing(true);
-
-
-        }
-        //coonectomg the first and last point 
-        drawtoSubscibers(constStartpt, endpoint, value, newNvObj);
-        newNvObj.setDrawingEnabled(false);
-
+        drawtoSubscibers(data, currentThis);
     });
 
 };
