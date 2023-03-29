@@ -32,7 +32,7 @@ Drawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
 
     // send via pusher
-    LINK.trigger('client-receive', { 'drawing': last_drawing, 'label': this.nv.opts.penValue });
+    LINK.trigger('client-receive', { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue });
 
 };
 
@@ -48,6 +48,16 @@ Drawer.prototype.onKeyDown = function (e) {
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(2, true);
     }
+    else if (e.keyCode == 90 && e.ctrlKey) {
+        // capturing ctrl + zfor undo
+        console.log(this.nv.drawBitmap)
+        this.nv.drawUndo();
+        LINK.trigger('client-receive', {
+            'undo': true, 'drawing': [], 'label': this.nv.opts.penValue
+        });
+
+    }
+
     this.nv.updateGLVolume()
 }
 
@@ -86,6 +96,7 @@ Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
     }
     //coonectomg the first and last point 
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
+    currentThis.nv.drawAddUndoBitmap();
     currentThis.nv.setDrawingEnabled(false);
 }
 Drawer.prototype.connect = function () {
@@ -107,8 +118,14 @@ Drawer.prototype.connect = function () {
     let drawtoSubscibers = this.drawOnPusherTrigger;
     let currentThis = this;
     LINK.bind('client-receive', function (data) {
-        drawtoSubscibers(data, currentThis);
+        if (data['undo']) {
+            currentThis.nv.drawUndo();
+        } else {
+            drawtoSubscibers(data, currentThis);
+        }
+
     });
+
 
 };
 
