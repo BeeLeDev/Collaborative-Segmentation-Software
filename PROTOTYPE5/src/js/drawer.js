@@ -50,6 +50,7 @@ Drawer.prototype.onKeyDown = function (e) {
         // capturing ctrl + zfor undo
         console.log(this.nv.drawBitmap)
         this.nv.drawUndo();
+        this.currentDrawData.pop()
         LINK.trigger('client-receive', {
             'undo': true, 'drawing': [], 'label': this.nv.opts.penValue
         });
