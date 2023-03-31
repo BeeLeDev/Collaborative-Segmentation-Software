@@ -4,16 +4,12 @@ class Drawer {
     constructor(viewer) {
         this.nv = viewer.nv;
         this.setUpInteraction();
+        this.currentDrawData = []
+
 
     }
 }
 Drawer.prototype.setUpInteraction = function () {
-
-    /* this.nv.onLocationChange = function (e) {
-
-        position = e['vox'];
-
-    }.bind(this); */
 
     const element = document.getElementById('viewer');
 
@@ -30,9 +26,11 @@ Drawer.prototype.onMouseMove = function (e) {
 
 Drawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
-
+    let shareObj = { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue };
+    this.currentDrawData.push(shareObj);
     // send via pusher
-    LINK.trigger('client-receive', { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue });
+    LINK.trigger('client-receive', shareObj);
+
 
 };
 
@@ -97,6 +95,7 @@ Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
     //coonectomg the first and last point 
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
     currentThis.nv.drawAddUndoBitmap();
+    currentThis.currentDrawData.push(data)
     currentThis.nv.setDrawingEnabled(false);
 }
 Drawer.prototype.connect = function () {
@@ -117,9 +116,10 @@ Drawer.prototype.connect = function () {
     LINK = pusher.subscribe(channel);
     let drawtoSubscibers = this.drawOnPusherTrigger;
     let currentThis = this;
-    LINK.bind('client-receive', function (data) {
+    LINK.bind('client-receive', (data) => {
         if (data['undo']) {
             currentThis.nv.drawUndo();
+            currentThis.currentDrawData.pop()
         } else {
             drawtoSubscibers(data, currentThis);
         }
