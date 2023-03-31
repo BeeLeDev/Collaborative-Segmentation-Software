@@ -24,7 +24,7 @@ class Viewer {
         nv.loadVolumes(data);
 
 
-        this.view = 0;
+        this.view = 1;
     }
 };
 

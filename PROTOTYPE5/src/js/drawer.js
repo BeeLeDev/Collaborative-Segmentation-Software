@@ -3,6 +3,7 @@
 class Drawer {
     constructor(viewer) {
         this.nv = viewer.nv;
+        this.viewer = viewer
         this.setUpInteraction();
         this.currentDrawData = []
 
@@ -40,6 +41,10 @@ Drawer.prototype.onKeyDown = function (e) {
         // Red - click 1
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(1, true);
+    }
+    else if (e.code == 'Space') {
+        this.viewer.changeView()
+        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
     else if (e.keyCode == 50) {
         // Green - click 2
@@ -93,12 +98,17 @@ Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
         startPt = endpoint;
         currentThis.nv.refreshDrawing(true);
     }
-    //coonectomg the first and last point 
+    //coonecting the first and last point
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
     currentThis.nv.setDrawingEnabled(false);
 }
+
+Drawer.prototype.setSliceType = function (data, currentThis) {
+    currentThis.nv.setSliceType(data);
+}
+
 Drawer.prototype.connect = function () {
 
     var channelname = 'cs410';
@@ -116,6 +126,7 @@ Drawer.prototype.connect = function () {
     var channel = 'private-' + channelname;
     LINK = pusher.subscribe(channel);
     let drawtoSubscibers = this.drawOnPusherTrigger;
+    let setSliceType = this.setSliceType;
     let currentThis = this;
     LINK.bind('client-receive', (data) => {
         if (data['undo']) {
@@ -125,6 +136,9 @@ Drawer.prototype.connect = function () {
             drawtoSubscibers(data, currentThis);
         }
 
+    });
+    LINK.bind('client-set-slicetype', function (data) {
+        setSliceType(data['view_number'],currentThis);
     });
 
 
