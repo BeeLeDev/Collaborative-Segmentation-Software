@@ -12,5 +12,7 @@ Status - In Progress
   3. Prototype 3 - Shared drawing app using Socket.io
   4. Prototype 4 - Collaborative annotation using NiiVue and Pusher
         * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE4/
-  5. Prototype 5 - Another collaborative annotation using NiiVue and Pusher
+  5. Prototype 5 - Additional features with prototype 4
+        * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE5/
+  5. Prototype 6 - Another collaborative annotation using NiiVue and Pusher
         * Demo Link - https://oopsuwu.github.io/MGH/pusher-trigger-subscribe-example/indexDraw-v1.1.html
