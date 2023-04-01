@@ -43,6 +43,7 @@ Drawer.prototype.onKeyDown = function (e) {
         this.nv.setPenValue(1, true);
     }
     else if (e.code == 'Space') {
+        // space - change view
         this.viewer.changeView()
         LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
