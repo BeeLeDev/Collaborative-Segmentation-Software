@@ -27,7 +27,7 @@ Drawer.prototype.onMouseMove = function (e) {
 
 Drawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
-    let shareObj = { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue };
+    let shareObj = { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue, 'view_number': this.viewer.view };
     this.currentDrawData.push(shareObj);
     // send via pusher
     LINK.trigger('client-receive', shareObj);
@@ -43,6 +43,7 @@ Drawer.prototype.onKeyDown = function (e) {
         this.nv.setPenValue(1, true);
     }
     else if (e.code == 'Space') {
+        // space - change view
         this.viewer.changeView()
         LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
@@ -102,6 +103,7 @@ Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
+    currentThis.nv.setSliceType(data['view_number']);
     currentThis.nv.setDrawingEnabled(false);
 }
 
@@ -138,7 +140,7 @@ Drawer.prototype.connect = function () {
 
     });
     LINK.bind('client-set-slicetype', function (data) {
-        setSliceType(data['view_number'],currentThis);
+        setSliceType(data['view_number'], currentThis);
     });
 
 
