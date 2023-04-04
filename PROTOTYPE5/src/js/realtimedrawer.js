@@ -57,9 +57,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         console.log(this.nv.drawBitmap)
         this.nv.drawUndo();
         this.currentDrawData.pop()
-        LINK.trigger('client-receive', {
-            'undo': true, 'drawing': [], 'label': this.nv.opts.penValue
-        });
+        LINK.trigger('client-undo', {});
 
     }
 
@@ -131,17 +129,16 @@ RealTimeDrawer.prototype.connect = function () {
     let setSliceType = this.setSliceType;
     let currentThis = this;
     LINK.bind('client-receive', (data) => {
-        if (data['undo']) {
-            currentThis.nv.drawUndo();
-            currentThis.currentDrawData.pop()
-        } else {
-            drawtoSubscibers(data, currentThis);
-        }
-
+        drawtoSubscibers(data, currentThis);
     });
     LINK.bind('client-set-slicetype', function (data) {
         setSliceType(data['view_number'], currentThis);
     });
+    LINK.bind('client-undo', function (data) {
+        currentThis.nv.drawUndo();
+        currentThis.currentDrawData.pop()
+    });
+
 
 
 };
