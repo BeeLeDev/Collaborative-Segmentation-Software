@@ -1,6 +1,6 @@
 
 
-class Drawer {
+class RealTimeDrawer {
     constructor(viewer) {
         this.nv = viewer.nv;
         this.viewer = viewer
@@ -10,7 +10,7 @@ class Drawer {
 
     }
 }
-Drawer.prototype.setUpInteraction = function () {
+RealTimeDrawer.prototype.setUpInteraction = function () {
 
     const element = document.getElementById('viewer');
 
@@ -21,11 +21,11 @@ Drawer.prototype.setUpInteraction = function () {
 
 }
 
-Drawer.prototype.onMouseMove = function (e) {
+RealTimeDrawer.prototype.onMouseMove = function (e) {
     this.draw()
 };
 
-Drawer.prototype.onMouseUp = function (e) {
+RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     let shareObj = { 'undo': false, 'drawing': last_drawing, 'label': this.nv.opts.penValue, 'view_number': this.viewer.view };
     this.currentDrawData.push(shareObj);
@@ -35,22 +35,22 @@ Drawer.prototype.onMouseUp = function (e) {
 
 };
 
-Drawer.prototype.onKeyDown = function (e) {
+RealTimeDrawer.prototype.onKeyDown = function (e) {
 
     if (e.keyCode == 49) {
         // Red - click 1
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(1, true);
     }
-    else if (e.code == 'Space') {
-        // space - change view
-        this.viewer.changeView()
-        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
-    }
     else if (e.keyCode == 50) {
         // Green - click 2
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(2, true);
+    }
+    else if (e.code == 'Space') {
+        // space - change view
+        this.viewer.changeView()
+        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
     else if (e.keyCode == 90 && e.ctrlKey) {
         // capturing ctrl + zfor undo
@@ -67,7 +67,7 @@ Drawer.prototype.onKeyDown = function (e) {
 }
 
 
-Drawer.prototype.draw = function () {
+RealTimeDrawer.prototype.draw = function () {
     //console.log(nv.drawPenFillPts)
     if (this.nv.drawPenFillPts.length > 0) {
         last_drawing = this.nv.drawPenFillPts;
@@ -75,7 +75,7 @@ Drawer.prototype.draw = function () {
 
 };
 
-Drawer.prototype.drawFilled = function (ptA, ptB, label, nv) {
+RealTimeDrawer.prototype.drawFilled = function (ptA, ptB, label, nv) {
     if (!nv.opts.drawingEnabled) {
         nv.setDrawingEnabled(true);
     }
@@ -85,7 +85,7 @@ Drawer.prototype.drawFilled = function (ptA, ptB, label, nv) {
     nv.refreshDrawing(true);
 }
 
-Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
+RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
     let startPt = [data['drawing'][0][0], data['drawing'][0][1], data['drawing'][0][2]]
     let constStartpt = startPt;
     let value = data['label'];
@@ -107,11 +107,11 @@ Drawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
     currentThis.nv.setDrawingEnabled(false);
 }
 
-Drawer.prototype.setSliceType = function (data, currentThis) {
+RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
     currentThis.nv.setSliceType(data);
 }
 
-Drawer.prototype.connect = function () {
+RealTimeDrawer.prototype.connect = function () {
 
     var channelname = 'cs410';
 

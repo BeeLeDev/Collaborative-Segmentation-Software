@@ -15,13 +15,13 @@ window.onload = function () {
     }
 
     var v = new Viewer(document.getElementById('viewer'), url);
-    //new Drawer(viewer)
-    var d = new Drawer(v); // attach drawer
 
-   /*  if (filename) {
-        console.log('Storing', filename)
-        H.D.filename = filename;
-    } */
+    var d = new RealTimeDrawer(v); // attach drawer
+
+    /*  if (filename) {
+         console.log('Storing', filename)
+         H.D.filename = filename;
+     } */
 
 
     /*  H.A = new H.Annotator();
