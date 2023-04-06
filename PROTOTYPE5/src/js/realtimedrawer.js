@@ -60,10 +60,19 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         LINK.trigger('client-undo', {});
 
     }
+    else if (e.keyCode == 89 && e.ctrlKey) {
+        //save drawing as image on Ctrl + Y
+        this.saveDrawing()
+    }
 
     this.nv.updateGLVolume()
 }
 
+
+RealTimeDrawer.prototype.saveDrawing = function () {
+    this.nv.saveScene("niivue.png")
+
+};
 
 RealTimeDrawer.prototype.draw = function () {
     //console.log(nv.drawPenFillPts)
