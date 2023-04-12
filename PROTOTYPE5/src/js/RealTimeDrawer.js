@@ -1,15 +1,12 @@
-
-
 class RealTimeDrawer {
     constructor(viewer) {
         this.nv = viewer.nv;
         this.viewer = viewer
         this.setUpInteraction();
         this.currentDrawData = []
-
-
     }
 }
+
 RealTimeDrawer.prototype.setUpInteraction = function () {
 
     const element = document.getElementById('viewer');
@@ -18,7 +15,26 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
+    this.setupColor()
+}
 
+function ViewColorMap(num) {
+    return [{ "id": 1, "label": "Red" }, { "id": 2, "label": "Green" }, { "id": 3, "label": "Blue" },
+    { "id": 4, "label": "Yellow" }, { "id": 5, "label": "Cyan" }].find(x => x.id == num).label
+}
+
+RealTimeDrawer.prototype.setupColor = function () {
+    this.pencolorWrapper = document.getElementById("color");
+    this.penlabel = this.pencolorWrapper.children.namedItem("label")
+    this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(1)
+    this.nv.setPenValue(1, true);
+    this.nv.setDrawingEnabled(true);
+    this.penslider = this.pencolorWrapper.children.namedItem("slider")
+    this.penslider.oninput = (e) => {
+        this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
+        this.nv.setDrawingEnabled(true);
+        this.nv.setPenValue(e.target.value, true);
+    }
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
@@ -31,19 +47,17 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.currentDrawData.push(shareObj);
     // send via pusher
     LINK.trigger('client-receive', shareObj);
-
-
 };
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
 
     if (e.keyCode == 49) {
-        // Red - click 1
+        // red - Press 1
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(1, true);
     }
     else if (e.keyCode == 50) {
-        // Green - click 2
+        // green - Press 2
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         this.nv.setPenValue(2, true);
     }
@@ -53,7 +67,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
     else if (e.keyCode == 90 && e.ctrlKey) {
-        // capturing ctrl + zfor undo
+        // capturing Ctrl + Z for undo
         console.log(this.nv.drawBitmap)
         this.nv.drawUndo();
         this.currentDrawData.pop()
@@ -61,17 +75,15 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 
     }
     else if (e.keyCode == 89 && e.ctrlKey) {
-        //save drawing as image on Ctrl + Y
+        // save drawing as image on Ctrl + Y
         this.saveDrawing()
     }
 
     this.nv.updateGLVolume()
 }
 
-
 RealTimeDrawer.prototype.saveDrawing = function () {
     this.nv.saveScene("niivue.png")
-
 };
 
 RealTimeDrawer.prototype.draw = function () {
@@ -147,9 +159,6 @@ RealTimeDrawer.prototype.connect = function () {
         currentThis.nv.drawUndo();
         currentThis.currentDrawData.pop()
     });
-
-
-
 };
 
 
