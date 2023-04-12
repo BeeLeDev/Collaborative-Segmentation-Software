@@ -16,6 +16,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
     this.setupColor();
+    this.setupDrawOpacity();
 }
 
 function ViewColorMap(num) {
@@ -32,9 +33,26 @@ RealTimeDrawer.prototype.setupColor = function () {
     Cyan - 5
     */
     this.currentColor = 1;
-    this.penColorLabel = document.getElementById("color");
+    this.penColorLabel = document.getElementById("currentColor");
     this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
     this.nv.setPenValue(this.currentColor, true);
+}
+
+RealTimeDrawer.prototype.setupDrawOpacity = function () {
+
+    this.nv.drawOpacity = 0.8;
+    this.opacityWrapper = document.getElementById("currentOpacity");
+    this.opacityLabel = this.opacityWrapper.children.namedItem("opacityLabel");
+
+    this.opacityLabel.innerHTML = "Opacity: " + this.nv.drawOpacity;
+    this.opacitySlider = this.opacityWrapper.children.namedItem("opacitySlider");
+    this.opacitySlider.oninput = (e) => {
+        this.nv.drawOpacity = e.target.value;
+        this.opacityLabel.innerHTML = "Opacity: " + this.nv.drawOpacity;
+    }
+    this.opacitySlider.onchange = (e) => {
+        this.nv.updateGLVolume();
+    }
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
@@ -53,7 +71,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 
     // toggle drawing - Press 1
     if (e.keyCode == 49) {
-        this.toggle = document.getElementById("toggle");
+        this.toggle = document.getElementById("toggleDrawing");
 
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
 
