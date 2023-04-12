@@ -24,15 +24,15 @@ function ViewColorMap(num) {
 }
 
 RealTimeDrawer.prototype.setupColor = function () {
-    this.pencolorWrapper = document.getElementById("color");
-    this.penlabel = this.pencolorWrapper.children.namedItem("label")
-    this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(1)
+    this.penColorWrapper = document.getElementById("color");
+    this.penLabel = this.penColorWrapper.children.namedItem("label")
+    this.penLabel.innerHTML = "Pen Color: " + ViewColorMap(1)
     this.nv.setPenValue(1, true);
-    this.nv.setDrawingEnabled(true);
-    this.penslider = this.pencolorWrapper.children.namedItem("slider")
-    this.penslider.oninput = (e) => {
-        this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
-        this.nv.setDrawingEnabled(true);
+    //this.nv.setDrawingEnabled(true);
+    this.penSlider = this.penColorWrapper.children.namedItem("slider")
+    this.penSlider.oninput = (e) => {
+        this.penLabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
+        //this.nv.setDrawingEnabled(true);
         this.nv.setPenValue(e.target.value, true);
     }
 }
@@ -51,15 +51,19 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
 
+    // toggle drawing - Press 1
     if (e.keyCode == 49) {
-        // red - Press 1
+        this.toggle = document.getElementById("toggle");
+
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
-        this.nv.setPenValue(1, true);
-    }
-    else if (e.keyCode == 50) {
-        // green - Press 2
-        this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
-        this.nv.setPenValue(2, true);
+
+        if (this.nv.opts.drawingEnabled) {
+            this.toggle.innerHTML = "Enabled"
+        }
+        else {
+            this.toggle.innerHTML = "Disabled"
+        }
+
     }
     else if (e.code == 'Space') {
         // space - change view
@@ -118,7 +122,7 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
         startPt = endpoint;
         currentThis.nv.refreshDrawing(true);
     }
-    //coonecting the first and last point
+    //connecting the first and last point
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
