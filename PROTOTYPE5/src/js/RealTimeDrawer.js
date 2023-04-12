@@ -15,7 +15,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
-    this.setupColor()
+    this.setupColor();
 }
 
 function ViewColorMap(num) {
@@ -24,17 +24,17 @@ function ViewColorMap(num) {
 }
 
 RealTimeDrawer.prototype.setupColor = function () {
-    this.penColorWrapper = document.getElementById("color");
-    this.penLabel = this.penColorWrapper.children.namedItem("label")
-    this.penLabel.innerHTML = "Pen Color: " + ViewColorMap(1)
-    this.nv.setPenValue(1, true);
-    //this.nv.setDrawingEnabled(true);
-    this.penSlider = this.penColorWrapper.children.namedItem("slider")
-    this.penSlider.oninput = (e) => {
-        this.penLabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
-        //this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(e.target.value, true);
-    }
+    /*
+    Red - 1
+    Green - 2
+    Blue - 3
+    Yellow - 4
+    Cyan - 5
+    */
+    this.currentColor = 1;
+    this.penColorLabel = document.getElementById("color");
+    this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
+    this.nv.setPenValue(this.currentColor, true);
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
@@ -58,12 +58,21 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
 
         if (this.nv.opts.drawingEnabled) {
-            this.toggle.innerHTML = "Enabled"
+            this.toggle.innerHTML = "Enabled";
         }
         else {
-            this.toggle.innerHTML = "Disabled"
+            this.toggle.innerHTML = "Disabled";
         }
 
+    }
+    else if (e.keyCode == 50) {
+        this.currentColor += 1;
+        // cycles back to 1 (Red) when 'currentColor' reaches 5 (Cyan)
+        if (this.currentColor > 5) {
+            this.currentColor = 1;
+        }
+        this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
+        this.nv.setPenValue(this.currentColor, true);
     }
     else if (e.code == 'Space') {
         // space - change view
