@@ -17,12 +17,11 @@ class Viewer {
             opacity: 1,
             visible: true
         }];
-
-        nv.drawOpacity = 1.0;
+        
+        nv.drawOpacity = 0.7;
         //nv.setDrawColormap("_slicer3d")
 
         nv.loadVolumes(data);
-
 
         this.view = 1;
     }

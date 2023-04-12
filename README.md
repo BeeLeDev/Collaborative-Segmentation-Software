@@ -10,9 +10,9 @@ Status - In Progress
   2. Prototype 2 - Annotating over medical images using NiiVue
        * Demo Link - https://lahasyakr.github.io/DrawusingNiivue/
   3. Prototype 3 - Shared drawing app using Socket.io
-  4. Prototype 4 - Collaborative annotation using NiiVue and Pusher
+  4. Pusher Example - Another collaborative annotation using NiiVue and Pusher
+        * Demo Link - https://oopsuwu.github.io/MGH/Pusher_Example/indexDraw-v1.1.html
+  5. Prototype 4 - Collaborative annotation using NiiVue and Pusher
         * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE4/
-  5. Prototype 5 - Additional features with prototype 4
+  6. Prototype 5 - Prototype 4 with additional features and UI changes
         * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE5/
-  5. Prototype 6 - Another collaborative annotation using NiiVue and Pusher
-        * Demo Link - https://oopsuwu.github.io/MGH/pusher-trigger-subscribe-example/indexDraw-v1.1.html
