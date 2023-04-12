@@ -18,9 +18,25 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
-
+    this.SetupColor()
 }
-
+function ViewColorMap(num) {
+  return [{ "id": 1, "label": "red" }, { "id": 2, "label": "green" }, { "id": 3, "label": "blue" },
+  { "id": 4, "label": "yellow" }, { "id": 5, "label": "cycan" }].find(x => x.id == num).label
+}
+RealTimeDrawer.prototype.SetupColor = function () {
+  this.pencolorWrapper = document.getElementById("color");
+  this.penlabel = this.pencolorWrapper.children.namedItem("label")
+  this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(1)
+  this.nv.setPenValue(1, true);
+  this.nv.setDrawingEnabled(true);
+  this.penslider = this.pencolorWrapper.children.namedItem("slider")
+  this.penslider.onchange = (e) => {
+    this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
+    this.nv.setDrawingEnabled(true);
+    this.nv.setPenValue(e.target.value, true);
+  }
+}
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     this.draw()
 };
