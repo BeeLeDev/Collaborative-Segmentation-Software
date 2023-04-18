@@ -16,8 +16,10 @@ class RealTimeDrawer {
 RealTimeDrawer.prototype.setUpInteraction = function () {
 
     this.nv.onLocationChange = function (e) {
-            this.position = e['vox'];
+        this.position = e['vox'];
     }.bind(this);
+
+
 
     const element = document.getElementById('viewer');
 
@@ -26,12 +28,24 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
 
+    let nvobj = this.nv;
+    nvobj.setPenValue(1, this.isFilled); // initializing for color red
+    $(".colorPickSelector").colorPick({
+        'initialColor': "#FF0000", // initial color in pallete
+        'onColorSelected': function () {
+            this.element.css({ 'backgroundColor': this.color, 'color': this.color });
+            nvobj.setDrawingEnabled(true);
+            nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
+
+        }
+    });
+
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.isFilled) {
         this.draw()
-    } else if ( e.buttons && this.nv.opts.drawingEnabled && this.position) {
+    } else if (e.buttons && this.nv.opts.drawingEnabled && this.position) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
         currentThis.nv.drawAddUndoBitmap();
@@ -43,10 +57,10 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     this.position = [];
     if (this.nv.opts.penValue > 0 && this.nv.opts.drawingEnabled) {
-        let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue};
+        let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
         // send via pusher
-        LINK.trigger('client-receive', shareObj);  
+        LINK.trigger('client-receive', shareObj);
     }
     this.last_drawing = [];
 
@@ -55,17 +69,21 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
 
-    if (e.keyCode == 49) {
-        // Red - click 1
-        this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(1, this.isFilled);
+    /*  if (e.keyCode == 49) {
+         // Red - click 1
+         this.nv.setDrawingEnabled(true);
+         this.nv.setPenValue(1, this.isFilled);
+     }
+     else if (e.keyCode == 50) {
+         // Green - click 2
+         this.nv.setDrawingEnabled(true);
+         this.nv.setPenValue(2, this.isFilled);
+     } */
+    if (e.keyCode == 68) {
+        // enable draw onclick of letter "d"
+        this.nv.setDrawingEnabled(true); 
     }
-    else if (e.keyCode == 50) {
-        // Green - click 2
-        this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(2, this.isFilled);
-    }
-    else if(e.keyCode == 27  ){
+    else if (e.keyCode == 27) {
         //diable drawing on escape
         this.nv.setDrawingEnabled(false);
     }
@@ -85,7 +103,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         //save drawing as image on Ctrl + Y
         this.saveDrawing()
     }
-    
+
     this.nv.updateGLVolume()
 }
 
