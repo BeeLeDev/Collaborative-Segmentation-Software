@@ -15,25 +15,34 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
-    this.setupColor()
+    this.setupColor();
 }
 
+// Integer : Color mapping
 function ViewColorMap(num) {
-    return [{ "id": 1, "label": "Red" }, { "id": 2, "label": "Green" }, { "id": 3, "label": "Blue" },
-    { "id": 4, "label": "Yellow" }, { "id": 5, "label": "Cyan" }].find(x => x.id == num).label
+    return [{ "id": 1, "label": "Red" }, { "id": 2, "label": "Green" }, { "id": 3, "label": "Blue" }].find(x => x.id == num).label
 }
 
 RealTimeDrawer.prototype.setupColor = function () {
-    this.pencolorWrapper = document.getElementById("color");
-    this.penlabel = this.pencolorWrapper.children.namedItem("label")
-    this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(1)
-    this.nv.setPenValue(1, true);
-    this.nv.setDrawingEnabled(true);
-    this.penslider = this.pencolorWrapper.children.namedItem("slider")
-    this.penslider.oninput = (e) => {
-        this.penlabel.innerHTML = "Pen Color: " + ViewColorMap(e.target.value)
-        this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(e.target.value, true);
+    this.currentColor = 1;
+    this.penColorLabel = document.getElementById("currentColor");
+    this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
+    this.nv.setPenValue(this.currentColor, true);
+}
+
+RealTimeDrawer.prototype.setupDrawOpacity = function () {
+    this.nv.drawOpacity = 0.8;
+    this.opacityWrapper = document.getElementById("currentOpacity");
+    this.opacityLabel = this.opacityWrapper.children.namedItem("opacityLabel");
+
+    this.opacityLabel.innerHTML = this.nv.drawOpacity;
+    this.opacitySlider = this.opacityWrapper.children.namedItem("opacitySlider");
+    this.opacitySlider.oninput = (e) => {
+        this.nv.drawOpacity = e.target.value;
+        this.opacityLabel.innerHTML = this.nv.drawOpacity;
+    }
+    this.opacitySlider.onchange = (e) => {
+        this.nv.updateGLVolume();
     }
 }
 
@@ -50,32 +59,42 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 };
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
-
+    // press 1 - toggle draw
     if (e.keyCode == 49) {
-        // red - Press 1
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
-        this.nv.setPenValue(1, true);
+        
+        if (this.nv.opts.drawingEnabled) {
+            document.getElementById("toggleDrawing").innerHTML = "Enabled";
+        }
+        else {
+            document.getElementById("toggleDrawing").innerHTML = "Disabled";
+        }
     }
+    // press 2 - change color
     else if (e.keyCode == 50) {
-        // green - Press 2
-        this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
-        this.nv.setPenValue(2, true);
+        this.currentColor += 1;
+        // cycles back to 1 (Red) when 'currentColor' reaches 5 (Cyan)
+        if (this.currentColor > 5) {
+            this.currentColor = 1;
+        }
+        this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
+        this.nv.setPenValue(this.currentColor, true);
     }
+    // space - change view
     else if (e.code == 'Space') {
-        // space - change view
         this.viewer.changeView()
         LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
+    // ctrl + z - undo
     else if (e.keyCode == 90 && e.ctrlKey) {
-        // capturing Ctrl + Z for undo
         console.log(this.nv.drawBitmap)
         this.nv.drawUndo();
         this.currentDrawData.pop()
         LINK.trigger('client-undo', {});
 
     }
+    // ctrl + y - save image
     else if (e.keyCode == 89 && e.ctrlKey) {
-        // save drawing as image on Ctrl + Y
         this.saveDrawing()
     }
 
@@ -91,13 +110,15 @@ RealTimeDrawer.prototype.draw = function () {
     if (this.nv.drawPenFillPts.length > 0) {
         last_drawing = this.nv.drawPenFillPts;
     }
-
 };
 
 RealTimeDrawer.prototype.drawFilled = function (ptA, ptB, label, nv) {
+    /*
+    // what is this for?
     if (!nv.opts.drawingEnabled) {
         nv.setDrawingEnabled(true);
     }
+    */
     //nv.setDrawingEnabled(false);
     nv.drawPenLine(ptA, ptB, label)
     console.log(nv.drawPenFillPts)
@@ -118,12 +139,11 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
         startPt = endpoint;
         currentThis.nv.refreshDrawing(true);
     }
-    //coonecting the first and last point
+    //connecting the first and last point
     currentThis.drawFilled(constStartpt, endpoint, value, currentThis.nv);
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
     currentThis.nv.setSliceType(data['view_number']);
-    currentThis.nv.setDrawingEnabled(false);
 }
 
 RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
