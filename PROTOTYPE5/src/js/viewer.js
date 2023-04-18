@@ -17,8 +17,6 @@ class Viewer {
             opacity: 1,
             visible: true
         }];
-        
-        nv.drawOpacity = 0.7;
         //nv.setDrawColormap("_slicer3d")
 
         nv.loadVolumes(data);

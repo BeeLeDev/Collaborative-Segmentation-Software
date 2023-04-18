@@ -16,12 +16,12 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onkeydown = this.onKeyDown.bind(this);
     this.connect();
     this.setupColor();
+    this.setupDrawOpacity();
 }
 
 // Integer : Color mapping
 function ViewColorMap(num) {
-    return [{ "id": 1, "label": "Red" }, { "id": 2, "label": "Green" }, { "id": 3, "label": "Blue" },
-    { "id": 4, "label": "Yellow" }, { "id": 5, "label": "Cyan" }].find(x => x.id == num).label
+    return [{ "id": 1, "label": "Red" }, { "id": 2, "label": "Green" }, { "id": 3, "label": "Blue" }].find(x => x.id == num).label
 }
 
 RealTimeDrawer.prototype.setupColor = function () {
@@ -38,10 +38,12 @@ RealTimeDrawer.prototype.setupDrawOpacity = function () {
 
     this.opacityLabel.innerHTML = this.nv.drawOpacity;
     this.opacitySlider = this.opacityWrapper.children.namedItem("opacitySlider");
+    
     this.opacitySlider.oninput = (e) => {
         this.nv.drawOpacity = e.target.value;
         this.opacityLabel.innerHTML = this.nv.drawOpacity;
     }
+
     this.opacitySlider.onchange = (e) => {
         this.nv.updateGLVolume();
     }
@@ -62,20 +64,21 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     // press 1 - toggle draw
     if (e.keyCode == 49) {
+        this.toggle = document.getElementById("toggleDrawing");
         this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
         
         if (this.nv.opts.drawingEnabled) {
-            document.getElementById("toggleDrawing").innerHTML = "Enabled";
+            this.toggle.innerHTML = "Enabled";
         }
         else {
-            document.getElementById("toggleDrawing").innerHTML = "Disabled";
+            this.toggle.innerHTML = "Disabled";
         }
     }
     // press 2 - change color
     else if (e.keyCode == 50) {
         this.currentColor += 1;
         // cycles back to 1 (Red) when 'currentColor' reaches 5 (Cyan)
-        if (this.currentColor > 5) {
+        if (this.currentColor > 3) {
             this.currentColor = 1;
         }
         this.penColorLabel.innerHTML = ViewColorMap(this.currentColor);
