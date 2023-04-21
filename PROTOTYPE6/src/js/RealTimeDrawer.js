@@ -34,7 +34,6 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         'initialColor': "#FF0000", // initial color in pallete
         'onColorSelected': function () {
             this.element.css({ 'backgroundColor': this.color, 'color': this.color });
-            //nvobj.setDrawingEnabled(true);
             nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
 
         }
@@ -68,17 +67,6 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 };
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
-
-    /*  if (e.keyCode == 49) {
-         // Red - click 1
-         this.nv.setDrawingEnabled(true);
-         this.nv.setPenValue(1, this.isFilled);
-     }
-     else if (e.keyCode == 50) {
-         // Green - click 2
-         this.nv.setDrawingEnabled(true);
-         this.nv.setPenValue(2, this.isFilled);
-     } */
     if (e.keyCode == 68) {
         // enable draw onclick of letter "d"
         this.nv.setDrawingEnabled(true); 
