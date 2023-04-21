@@ -1,6 +1,6 @@
 # MGH.
 
-Overview - Collaborative Medical Imaging.
+Overview - Collaborative Annotation for Medical Imaging.
 
 Status - In Progress
 
@@ -14,5 +14,8 @@ Status - In Progress
         * Demo Link - https://oopsuwu.github.io/MGH/Pusher_Example/indexDraw-v1.1.html
   5. Prototype 4 - Collaborative annotation using NiiVue and Pusher
         * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE4/
-  6. Prototype 5 - Prototype 4 with additional features and UI changes
+  6. Prototype 5 - Prototype 5 with additional features and UI changes
         * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE5/
+  7. Prototype 6 - Prototype 6 with additional features and UI changes(color pallete, same view for all subscribers)
+        * Demo Link - https://oopsuwu.github.io/MGH/PROTOTYPE6/
+
