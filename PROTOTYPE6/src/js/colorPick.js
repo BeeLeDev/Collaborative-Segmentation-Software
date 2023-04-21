@@ -49,7 +49,7 @@
             this.element.click(function (event) {
                 event.preventDefault();
                 if (!$.isopen) {
-                    self.show(event.pageX, event.pageY - 200);
+                    self.show(event.pageX, event.pageY - 180);
                 } else {
                    self.hide()
                 }

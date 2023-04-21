@@ -34,7 +34,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         'initialColor': "#FF0000", // initial color in pallete
         'onColorSelected': function () {
             this.element.css({ 'backgroundColor': this.color, 'color': this.color });
-            nvobj.setDrawingEnabled(true);
+            //nvobj.setDrawingEnabled(true);
             nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
 
         }
