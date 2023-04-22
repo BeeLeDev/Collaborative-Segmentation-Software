@@ -1,6 +1,6 @@
 # MGH.
 
-Overview - Collaborative Medical Imaging.
+Overview - Collaborative Annotation for Medical Imaging.
 
 Status - In Progress
 
