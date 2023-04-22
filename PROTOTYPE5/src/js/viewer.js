@@ -12,7 +12,7 @@ class Viewer {
         nv.setSliceType(nv.sliceTypeCoronal);
 
         let data = [{
-            url: 'https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz',
+            url: url,
             colorMap: 'gray',
             opacity: 1,
             visible: true
