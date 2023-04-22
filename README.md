@@ -19,4 +19,4 @@ Status - In Progress
   7. Prototype 6 - Prototype 6 with additional features and UI changes(color pallete, same view for all subscribers)
         * Demo Link -  
           * https://oopsuwu.github.io/MGH/PROTOTYPE6/
-          * With external image url - https://oopsuwu.github.io/MGH/PROTOTYPE6/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
+          * With external image data url - https://oopsuwu.github.io/MGH/PROTOTYPE6/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
