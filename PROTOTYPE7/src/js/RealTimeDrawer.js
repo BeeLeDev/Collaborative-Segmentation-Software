@@ -19,7 +19,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         this.position = e['vox'];
     }.bind(this);
 
-    this.nv.opts.dragMode = this.nv.dragModes.pan;
+    this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
 
     const element = document.getElementById('viewer');
 
