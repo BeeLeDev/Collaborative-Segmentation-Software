@@ -68,7 +68,7 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     if (e.keyCode == 68) {
         // enable draw onclick of letter "d"
-        this.nv.setDrawingEnabled(true); 
+        this.nv.setDrawingEnabled(true);
     }
     else if (e.keyCode == 27) {
         //diable drawing on escape
@@ -96,8 +96,8 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 
 
 RealTimeDrawer.prototype.saveDrawing = function () {
-    this.nv.saveScene("niivue.png")
-
+    this.nv.saveImage("draw.nii", true);
+    return;
 };
 
 RealTimeDrawer.prototype.draw = function () {
@@ -115,6 +115,7 @@ RealTimeDrawer.prototype.drawAnnotation = function (ptA, ptB, label, nv) {
     //nv.setDrawingEnabled(false);
 
     nv.drawPenLine(ptA, ptB, label);
+    console.log(nv.drawPenFillPts)
     nv.refreshDrawing(true);
 }
 
@@ -144,8 +145,15 @@ RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
     currentThis.nv.setSliceType(data);
 }
 
-RealTimeDrawer.prototype.connect = function () {
+RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
+    if (data.currentDrawData.length > 0 && currentThis.currentDrawData.length == 0) {
+        data.currentDrawData.forEach(ele => {
+            currentThis.drawOnPusherTrigger(ele, currentThis);
+        });
+    }
+}
 
+RealTimeDrawer.prototype.connect = function () {
     var channelname = 'cs410';
 
     console.log('Linking via channel ' + channelname + '...');
@@ -163,19 +171,58 @@ RealTimeDrawer.prototype.connect = function () {
     let drawtoSubscibers = this.drawOnPusherTrigger;
     let setSliceType = this.setSliceType;
     let currentThis = this;
+    let SyncOnJoin = this.SyncOnJoin;
+    // syncing annotaions  
     LINK.bind('client-receive', (data) => {
         if (data && data['drawing'].length > 0) {
             drawtoSubscibers(data, currentThis);
         }
     });
+    // syncing view changes  functionality
     LINK.bind('client-set-slicetype', function (data) {
         setSliceType(data['view_number'], currentThis);
     });
+    // syncing undo functionality
     LINK.bind('client-undo', function (data) {
         currentThis.nv.drawUndo();
         currentThis.currentDrawData.pop()
     });
 
+
+    // client sync on join
+    LINK.bind('client-sync-needed', (item) => {
+        if (item.isNeeded) {
+            LINK.trigger('client-sync-onjoin', {
+                'currentDrawData': currentThis.currentDrawData
+            })
+        }
+    });
+    LINK.bind('client-sync-onjoin', (item) => {
+        try {
+            jSuites.loading.show();
+            SyncOnJoin(item, currentThis);
+        } finally {
+            jSuites.loading.hide();
+        }
+
+    });
+
+    LINK.bind('pusher:subscription_succeeded', () => {
+        try {
+            jSuites.loading.show();
+            LINK.trigger('client-sync-needed', {
+                'isNeeded': true
+            });
+        } catch (err) {
+            jSuites.loading.hide();
+        }
+
+        setTimeout(function() {
+            // Hide
+            jSuites.loading.hide();
+        }, 2000);
+
+    });
 
 
 };
