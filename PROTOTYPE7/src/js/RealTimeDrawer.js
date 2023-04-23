@@ -19,7 +19,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         this.position = e['vox'];
     }.bind(this);
 
-
+    this.nv.opts.dragMode = this.nv.dragModes.pan;
 
     const element = document.getElementById('viewer');
 
@@ -217,7 +217,7 @@ RealTimeDrawer.prototype.connect = function () {
             jSuites.loading.hide();
         }
 
-        setTimeout(function() {
+        setTimeout(function () {
             // Hide
             jSuites.loading.hide();
         }, 2000);
