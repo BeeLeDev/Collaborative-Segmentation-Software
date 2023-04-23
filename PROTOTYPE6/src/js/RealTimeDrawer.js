@@ -180,8 +180,7 @@ RealTimeDrawer.prototype.connect = function () {
     LINK.bind('client-set-slicetype', function (data) {
         setSliceType(data['view_number'], currentThis);
     });
-    LINK.bind('client-receive-wheel', function (data) {
-        console.log(data["data"]["mouse_args"])
+    LINK.bind('client-receive-wheel', function (data) {        
         var m = data["data"]["mouse_args"]
         var u = data["data"]["canvas_info"]
         m.deltaY < 0 ? currentThis.nv.sliceScroll2D(-.01, m.clientX - u.left, m.clientY - u.top) : currentThis.nv.sliceScroll2D(.01, m.clientX - u.left, m.clientY - u.top)
