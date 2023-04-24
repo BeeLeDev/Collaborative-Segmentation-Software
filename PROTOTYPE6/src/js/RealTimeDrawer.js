@@ -47,6 +47,7 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     } else if (e.buttons && this.nv.opts.drawingEnabled && this.position) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
+        if (user !== undefined)
         currentThis.nv.drawAddUndoBitmap();
     }
 
@@ -55,7 +56,7 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
 RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     this.position = [];
-    if (this.nv.opts.penValue > 0 && this.nv.opts.drawingEnabled) {
+    if (this.nv.opts.drawingEnabled) {
         let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
         // send via pusher
@@ -74,6 +75,10 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     else if (e.keyCode == 27) {
         //diable drawing on escape
         this.nv.setDrawingEnabled(false);
+    }
+    else if (e.code == "KeyE") {
+        this.nv.setDrawingEnabled(true);
+        this.nv.setPenValue(0, this.isFilled);
     }
     else if (e.code == 'Space') {
         // space - change view
