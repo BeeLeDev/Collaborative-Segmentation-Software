@@ -47,8 +47,8 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     } else if (e.buttons && this.nv.opts.drawingEnabled && this.position) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
-        if (user !== undefined)
-        currentThis.nv.drawAddUndoBitmap();
+
+        //currentThis.nv.drawAddUndoBitmap();
     }
 
 };
