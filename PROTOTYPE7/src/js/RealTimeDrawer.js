@@ -44,7 +44,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.isFilled) {
         this.draw()
-    } else if (e.buttons && this.nv.opts.drawingEnabled && this.position) {
+    } else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
     }
@@ -54,7 +54,7 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
 RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     this.position = [];
-    if (this.nv.opts.penValue > 0 && this.nv.opts.drawingEnabled && this.last_drawing.length > 0) {
+    if (this.nv.opts.penValue >= 0 && this.nv.opts.drawingEnabled && this.last_drawing.length > 0) {
         let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
         // send via pusher
@@ -68,12 +68,12 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     if (e.keyCode == 68) {
         // enable draw onclick of letter "d"
-        this.nv.setDrawingEnabled(true);
+        this.enable_disable_Drawing();
     }
-    else if (e.keyCode == 27) {
-        //diable drawing on escape
-        this.nv.setDrawingEnabled(false);
-    }
+    /*  else if (e.keyCode == 27) {
+         //diable drawing on escape
+         this.nv.setDrawingEnabled(false);
+     } */
     else if (e.code == 'Space') {
         // space - change view
         this.viewer.changeView()
@@ -91,13 +91,39 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         this.saveDrawing()
     }
 
+    else if (e.keyCode == 66 && e.ctrlKey) {
+        //save drawing as screenshot on Ctrl + B
+        this.saveScreenshot()
+    }
+    else if (e.keyCode == 69) {
+        //save drawing as image on Ctrl + Y
+        this.nv.setDrawingEnabled(true);
+        this.nv.setPenValue(0);
+    }
+
     this.nv.updateGLVolume()
 }
 
 
+RealTimeDrawer.prototype.enable_disable_Drawing = function () {
+    this.toggle = document.getElementById("toggleDrawing");
+    this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
+
+    if (this.nv.opts.drawingEnabled) {
+        this.toggle.innerHTML = "Enabled";
+    }
+    else {
+        this.toggle.innerHTML = "Disabled";
+    }
+}
+
 RealTimeDrawer.prototype.saveDrawing = function () {
     this.nv.saveImage("draw.nii", true);
     return;
+};
+
+RealTimeDrawer.prototype.saveScreenshot = function () {
+    this.nv.saveScene("niivue.png")
 };
 
 RealTimeDrawer.prototype.draw = function () {
@@ -138,7 +164,10 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
 
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
-    currentThis.nv.setDrawingEnabled(false);
+    if (this.toggle = document.getElementById("toggleDrawing").innerHTML == "Disabled") {
+        currentThis.nv.setDrawingEnabled(false);
+    }
+
 }
 
 RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
