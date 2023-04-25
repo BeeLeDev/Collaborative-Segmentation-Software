@@ -67,13 +67,9 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     if (e.keyCode == 68) {
-        // enable draw onclick of letter "d"
+        // enable n disable draw onclick of letter "d"
         this.enable_disable_Drawing();
     }
-    /*  else if (e.keyCode == 27) {
-         //diable drawing on escape
-         this.nv.setDrawingEnabled(false);
-     } */
     else if (e.code == 'Space') {
         // space - change view
         this.viewer.changeView()
@@ -96,7 +92,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         this.saveScreenshot()
     }
     else if (e.keyCode == 69) {
-        //save drawing as image on Ctrl + Y
+        //onclick of E - erase is enabled
         this.nv.setDrawingEnabled(true);
         this.nv.setPenValue(0);
     }
@@ -164,6 +160,7 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
 
     currentThis.nv.drawAddUndoBitmap();
     currentThis.currentDrawData.push(data)
+
     if (this.toggle = document.getElementById("toggleDrawing").innerHTML == "Disabled") {
         currentThis.nv.setDrawingEnabled(false);
     }
