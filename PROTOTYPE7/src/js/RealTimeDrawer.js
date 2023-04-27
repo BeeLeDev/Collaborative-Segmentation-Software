@@ -19,7 +19,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         this.position = e['vox'];
     }.bind(this);
 
-    this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
+    
 
     const element = document.getElementById('viewer');
 
@@ -95,6 +95,21 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         //onclick of E - erase is enabled
         this.nv.setDrawingEnabled(true);
         this.nv.setPenValue(0);
+    }
+
+    else if (e.keyCode == 49) {
+          //onclick of 1
+        this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
+    }
+
+    else if (e.keyCode == 50) {
+          //onclick of 2
+        this.nv.opts.dragMode = this.nv.dragModes.measurement; // this for measurement;
+    }
+
+    else if (e.keyCode == 51) {
+        //onclick of 3 
+        this.nv.opts.dragMode = this.nv.dragModes.none; // this for none
     }
 
     this.nv.updateGLVolume()
