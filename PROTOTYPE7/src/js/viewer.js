@@ -1,42 +1,47 @@
+
 class Viewer {
-    constructor(element, url) {
-        //instance of niivue
-        var nv = new niivue.Niivue({});
+  constructor(element, url) {
+    //instance of niivue
+    var nv = new niivue.Niivue({});
 
-        this.nv = nv;
+    this.nv = nv;
 
-        //attach object to viewer
-        nv.attachToCanvas(element);
+    //attach object to viewer
+    nv.attachToCanvas(element);
 
-        //set default view to coronal
-        nv.setSliceType(nv.sliceTypeCoronal);
+    //set default view to coronal
+    nv.setSliceType(nv.sliceTypeCoronal);
 
-        let data = [{
-            url: url, // https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz,
-            colorMap: 'gray',
-            opacity: 1,
-            visible: true
-        }];
+    this.data = [{
+      url: url, // https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz,
+      colorMap: 'gray',
+      opacity: 1,
+      visible: true
+    }];
 
-        nv.drawOpacity = 1.0;
-        //nv.setDrawColormap("_slicer3d")
-
-        nv.loadVolumes(data);
+    nv.drawOpacity = 1.0;
+    this.view = 1;
 
 
-        this.view = 1;
-    }
+  }
 };
+
+Viewer.prototype.initialize = async function () {
+  await this.nv.loadVolumes(this.data).then(() => {
+    console.log("done!!")
+  }).catch(err => console.log("error loading url", err));
+}
+
 
 Viewer.prototype.changeView = function () {
 
-    this.view++;
+  this.view++;
 
-    if (this.view > 4) {
-        this.view = 0;
-    }
+  if (this.view > 4) {
+    this.view = 0;
+  }
 
-    this.nv.setSliceType(this.view);
+  this.nv.setSliceType(this.view);
 
 };
 

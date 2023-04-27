@@ -1,5 +1,4 @@
 
-
 window.onload = function () {
 
     var url = 'https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz';
@@ -14,9 +13,16 @@ window.onload = function () {
         url = data;
     }
 
-    var v = new Viewer(document.getElementById('viewer'), url);
+    const v = new Viewer(document.getElementById('viewer'), url);
 
-    var d = new RealTimeDrawer(v); // attach drawer
+    async function loadView() {
+        await v.initialize().then(() => {
+            console.log("succesful")
+            jSuites.loading.show();
+            const d = new RealTimeDrawer(v);
+        }).catch(err => console.log("error:: ", err))
+            .finally(jSuites.loading.hide())
+    }
 
-
+    loadView();
 };
