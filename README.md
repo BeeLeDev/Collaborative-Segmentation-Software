@@ -29,6 +29,6 @@ Status - In Progress
           * https://oopsuwu.github.io/MGH/PROTOTYPE7/
           * With external image data url - 
           eg:          
-          1. https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE6/samples/FLAIR.nii.gz
+          1. https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
           2. https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
 
