@@ -172,7 +172,8 @@ RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
 }
 
 RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
-    if (data.currentDrawData.length > 0 && currentThis.currentDrawData.length == 0) {
+    let newDataLength = data.currentDrawData.length;
+    if (newDataLength > currentThis.currentDrawData.length) {
         data.currentDrawData.forEach(ele => {
             currentThis.drawOnPusherTrigger(ele, currentThis);
         });
