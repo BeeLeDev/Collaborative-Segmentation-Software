@@ -10,6 +10,7 @@ class RealTimeDrawer {
         this.isFilled = false;
         this.last_drawing = [];
         this.position = null;
+        this.isNewUser = true;
 
 
     }
@@ -20,7 +21,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         this.position = e['vox'];
     }.bind(this);
 
-    
+
 
     const element = document.getElementById('viewer');
 
@@ -102,12 +103,12 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     }
 
     else if (e.keyCode == 49) {
-          //onclick of 1
+        //onclick of 1
         this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
     }
 
     else if (e.keyCode == 50) {
-          //onclick of 2
+        //onclick of 2
         this.nv.opts.dragMode = this.nv.dragModes.measurement; // this for measurement;
     }
 
@@ -196,11 +197,15 @@ RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
 }
 
 RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
-    let newDataLength = data.currentDrawData?.length;
-    if (newDataLength > currentThis.currentDrawData?.length) {
-        data.currentDrawData.forEach(ele => {
-            currentThis.drawOnPusherTrigger(ele, currentThis);
-        });
+    if (currentThis.isNewUser) {
+        let newDataLength = data.currentDrawData?.length;
+        currentThis.setSliceType(data.view, currentThis)
+        if (newDataLength > currentThis.currentDrawData?.length) {
+            data.currentDrawData.forEach(ele => {
+                currentThis.drawOnPusherTrigger(ele, currentThis);
+            });
+        }
+        currentThis.isNewUser = false;
     }
 }
 
@@ -244,7 +249,8 @@ RealTimeDrawer.prototype.connect = function () {
     LINK.bind('client-sync-needed', (item) => {
         if (item.isNeeded) {
             LINK.trigger('client-sync-onjoin', {
-                'currentDrawData': currentThis.currentDrawData
+                'currentDrawData': currentThis.currentDrawData,
+                'view': currentThis.viewer.view
             })
         }
     });
