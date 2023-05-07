@@ -3,12 +3,14 @@
 class RealTimeDrawer {
     constructor(viewer) {
         this.nv = viewer.nv;
-        this.viewer = viewer
+        this.viewer = viewer;
+        this.prevColor = 1;
         this.setUpInteraction();
         this.currentDrawData = [];
         this.isFilled = false;
         this.last_drawing = [];
         this.position = null;
+        this.isNewUser = true;
 
 
     }
@@ -19,7 +21,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         this.position = e['vox'];
     }.bind(this);
 
-    
+
 
     const element = document.getElementById('viewer');
 
@@ -35,7 +37,6 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         'onColorSelected': function () {
             this.element.css({ 'backgroundColor': this.color, 'color': this.color });
             nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
-
         }
     });
 
@@ -47,6 +48,10 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     } else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
+    }
+
+    if (this.nv.opts.penValue > 0) {
+        this.prevColor = this.nv.opts.penValue;
     }
 
 };
@@ -98,12 +103,12 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     }
 
     else if (e.keyCode == 49) {
-          //onclick of 1
+        //onclick of 1
         this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
     }
 
     else if (e.keyCode == 50) {
-          //onclick of 2
+        //onclick of 2
         this.nv.opts.dragMode = this.nv.dragModes.measurement; // this for measurement;
     }
 
@@ -118,7 +123,12 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 
 RealTimeDrawer.prototype.enable_disable_Drawing = function () {
     this.toggle = document.getElementById("toggleDrawing");
+    if (this.nv.opts.penValue == 0) {
+        this.nv.setPenValue(this.prevColor);
+        return;
+    }
     this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
+
 
     if (this.nv.opts.drawingEnabled) {
         this.toggle.innerHTML = "Enabled";
@@ -184,14 +194,19 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
 
 RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
     currentThis.nv.setSliceType(data);
+    currentThis.viewer.view = data
 }
 
 RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
-    let newDataLength = data.currentDrawData.length;
-    if (newDataLength > currentThis.currentDrawData.length) {
-        data.currentDrawData.forEach(ele => {
-            currentThis.drawOnPusherTrigger(ele, currentThis);
-        });
+    if (currentThis.isNewUser) {
+        let newDataLength = data.currentDrawData?.length;
+        currentThis.setSliceType(data.view, currentThis)
+        if (newDataLength > currentThis.currentDrawData?.length) {
+            data.currentDrawData.forEach(ele => {
+                currentThis.drawOnPusherTrigger(ele, currentThis);
+            });
+        }
+        currentThis.isNewUser = false;
     }
 }
 
@@ -235,7 +250,8 @@ RealTimeDrawer.prototype.connect = function () {
     LINK.bind('client-sync-needed', (item) => {
         if (item.isNeeded) {
             LINK.trigger('client-sync-onjoin', {
-                'currentDrawData': currentThis.currentDrawData
+                'currentDrawData': currentThis.currentDrawData,
+                'view': currentThis.viewer.view
             })
         }
     });
@@ -251,6 +267,7 @@ RealTimeDrawer.prototype.connect = function () {
 
     LINK.bind('pusher:subscription_succeeded', () => {
         try {
+            currentThis.isNewUser = true;
             jSuites.loading.show();
             LINK.trigger('client-sync-needed', {
                 'isNeeded': true
