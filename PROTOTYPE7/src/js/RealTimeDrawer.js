@@ -76,7 +76,9 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     // Space - Cycle Image Perspective
     else if (e.code == 'Space') {
         this.viewer.changeView()
-        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
+
+        // view sync (it is turned on by default)
+        //LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
     // Ctrl + Z - Undo Previous Annotation
     else if (e.keyCode == 90 && e.ctrlKey) {
