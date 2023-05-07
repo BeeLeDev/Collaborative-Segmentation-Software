@@ -139,7 +139,8 @@ RealTimeDrawer.prototype.enable_disable_Drawing = function () {
 }
 
 RealTimeDrawer.prototype.saveDrawing = function () {
-    this.nv.saveImage("draw.nii", true);
+    //this.nv.saveImage("draw.nii", true);
+    this.nv.saveDocument("niivue.drawing.nvd");
     return;
 };
 
