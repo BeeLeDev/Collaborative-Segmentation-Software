@@ -1,51 +1,49 @@
-
-
 class RealTimeDrawer {
     constructor(viewer) {
-        this.nv = viewer.nv;
+        this.nv = viewer.nv; // NiiVue object
         this.viewer = viewer;
-        this.prevColor = 1;
+        this.prevColor = 1; // previous selected color
         this.setUpInteraction();
         this.currentDrawData = [];
         this.isFilled = false;
         this.last_drawing = [];
         this.position = null;
         this.isNewUser = true;
-
-
+        this.isDrawing = false; // drawing flag
+        this.isErasing = false; // erasing flag
     }
 }
-RealTimeDrawer.prototype.setUpInteraction = function () {
 
+// initial setup when opening website
+RealTimeDrawer.prototype.setUpInteraction = function () {
     this.nv.onLocationChange = function (e) {
         this.position = e['vox'];
     }.bind(this);
 
-
-
     const element = document.getElementById('viewer');
-
     element.onmousemove = this.onMouseMove.bind(this);
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
+
     this.connect();
 
     let nvobj = this.nv;
     nvobj.setPenValue(1, this.isFilled); // initializing for color red
+
     $(".colorPickSelector").colorPick({
         'initialColor': "#FF0000", // initial color in pallete
         'onColorSelected': function () {
             this.element.css({ 'backgroundColor': this.color, 'color': this.color });
-            nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
+            nvobj.setPenValue(colorlist[this.color], this.isFilled); // setting color value
         }
     });
-
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.isFilled) {
         this.draw()
-    } else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
+    } 
+    else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
     }
@@ -53,7 +51,6 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.nv.opts.penValue > 0) {
         this.prevColor = this.nv.opts.penValue;
     }
-
 };
 
 RealTimeDrawer.prototype.onMouseUp = function (e) {
@@ -66,55 +63,51 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
         LINK.trigger('client-receive', shareObj);
     }
     this.last_drawing = [];
-
-
 };
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
+    // Hotkeys
+    // D - Toggle Drawing Tool
     if (e.keyCode == 68) {
-        // enable n disable draw onclick of letter "d"
         this.enable_disable_Drawing();
     }
+    // Space - Cycle Image Perspective
     else if (e.code == 'Space') {
-        // space - change view
         this.viewer.changeView()
-        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
+
+        // view sync (it is turned on by default)
+        //LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
+    // Ctrl + Z - Undo Previous Annotation
     else if (e.keyCode == 90 && e.ctrlKey) {
-        // capturing ctrl + z for undo
         this.nv.drawUndo();
         this.currentDrawData.pop()
         LINK.trigger('client-undo', {});
-
     }
+    // Ctrl + Y - Save Drawing as .nvd (Medical Volume + Annotations)
     else if (e.keyCode == 89 && e.ctrlKey) {
-        //save drawing as image on Ctrl + Y
         this.saveDrawing()
     }
-
+    // Ctrl + B - Save Drawing as .png (Current Image Slice + Annotations)
     else if (e.keyCode == 66 && e.ctrlKey) {
-        //save drawing as screenshot on Ctrl + B
+        e.preventDefault();
         this.saveScreenshot()
     }
+    // E - Toggle Erase Tool
     else if (e.keyCode == 69) {
-        //onclick of E - erase is enabled
-        this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(0);
+        this.enable_disable_Erasing();
     }
-
+    // 1 - Zoom Mode
     else if (e.keyCode == 49) {
-        //onclick of 1
-        this.nv.opts.dragMode = this.nv.dragModes.pan; // this for zoom functionality
+        this.nv.opts.dragMode = this.nv.dragModes.pan;
     }
-
+    // 2 - Measurement Mode
     else if (e.keyCode == 50) {
-        //onclick of 2
-        this.nv.opts.dragMode = this.nv.dragModes.measurement; // this for measurement;
+        this.nv.opts.dragMode = this.nv.dragModes.measurement;
     }
-
+    // 3 - Slice Cycle Mode
     else if (e.keyCode == 51) {
-        //onclick of 3 
-        this.nv.opts.dragMode = this.nv.dragModes.none; // this for none
+        this.nv.opts.dragMode = this.nv.dragModes.none;
     }
 
     this.nv.updateGLVolume()
@@ -122,19 +115,52 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 
 
 RealTimeDrawer.prototype.enable_disable_Drawing = function () {
-    this.toggle = document.getElementById("toggleDrawing");
-    if (this.nv.opts.penValue == 0) {
-        this.nv.setPenValue(this.prevColor);
-        return;
-    }
-    this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
+    this.toggleDrawing = document.getElementById("toggleDrawing");
+    this.toggleErasing = document.getElementById("toggleErasing");
 
+    // toggle drawing
+    this.isDrawing = !this.isDrawing;
 
-    if (this.nv.opts.drawingEnabled) {
-        this.toggle.innerHTML = "Enabled";
+    if (this.isDrawing) {
+        this.nv.setDrawingEnabled(true);
+
+        // selects the color previously chosen
+        if (this.nv.opts.penValue == 0) {
+            this.nv.setPenValue(this.prevColor);
+        }
+
+        this.toggleDrawing.innerHTML = "Enabled";
+
+        this.isErasing = false;
+        this.toggleErasing.innerHTML = "Disabled";
     }
     else {
-        this.toggle.innerHTML = "Disabled";
+        this.nv.setDrawingEnabled(false);
+
+        this.toggleDrawing.innerHTML = "Disabled";
+    }
+}
+
+RealTimeDrawer.prototype.enable_disable_Erasing = function () {
+    this.toggleDrawing = document.getElementById("toggleDrawing");
+    this.toggleErasing = document.getElementById("toggleErasing");
+
+    // toggle erasing
+    this.isErasing = !this.isErasing;
+
+    if (this.isErasing) {
+        this.nv.setDrawingEnabled(true)
+        this.nv.setPenValue(0);
+
+        this.toggleErasing.innerHTML = "Enabled";
+
+        this.isDrawing = false;
+        this.toggleDrawing.innerHTML = "Disabled";
+    }
+    else {
+        this.nv.setDrawingEnabled(false);
+
+        this.toggleErasing.innerHTML = "Disabled";
     }
 }
 
