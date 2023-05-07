@@ -139,13 +139,19 @@ RealTimeDrawer.prototype.enable_disable_Drawing = function () {
 }
 
 RealTimeDrawer.prototype.saveDrawing = function () {
+    var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
+    var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
+
+
     //this.nv.saveImage("draw.nii", true);
-    this.nv.saveDocument("niivue.drawing.nvd");
-    return;
+    this.nv.saveDocument(filenameWithoutExtension + ".drawing.nvd");
 };
 
 RealTimeDrawer.prototype.saveScreenshot = function () {
-    this.nv.saveScene("niivue.png")
+    var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
+    var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
+
+    this.nv.saveScene(filenameWithoutExtension + ".png")
 };
 
 RealTimeDrawer.prototype.draw = function () {
