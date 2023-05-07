@@ -194,6 +194,7 @@ RealTimeDrawer.prototype.drawOnPusherTrigger = function (data, currentThis) {
 
 RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
     currentThis.nv.setSliceType(data);
+    currentThis.viewer.view = data
 }
 
 RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
@@ -266,6 +267,7 @@ RealTimeDrawer.prototype.connect = function () {
 
     LINK.bind('pusher:subscription_succeeded', () => {
         try {
+            currentThis.isNewUser = true;
             jSuites.loading.show();
             LINK.trigger('client-sync-needed', {
                 'isNeeded': true
