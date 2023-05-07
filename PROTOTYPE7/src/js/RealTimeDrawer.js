@@ -25,6 +25,7 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onmousemove = this.onMouseMove.bind(this);
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
+    element.onwheel = this.onWheel.bind(this);
 
     this.connect();
 
@@ -83,6 +84,15 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
     }
     this.last_drawing = [];
 };
+
+RealTimeDrawer.prototype.onWheel = function (m) {
+    var u = this.nv.canvas.getBoundingClientRect();
+    var data = {
+        "mouse_args": { "deltaY": m.deltaY, "clientX": m.clientX, "clientY": m.clientY },
+        "canvas_info": { "left": u.left, "top": u.top }
+    }
+    LINK.trigger('client-receive-wheel', { "data": data });
+}
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     // Hotkeys
@@ -290,24 +300,34 @@ RealTimeDrawer.prototype.connect = function () {
     let setSliceType = this.setSliceType;
     let currentThis = this;
     let SyncOnJoin = this.SyncOnJoin;
-    // syncing annotaions  
+
+    // Sync Annotations
     LINK.bind('client-receive', (data) => {
         if (data && data['drawing'].length > 0) {
             drawtoSubscibers(data, currentThis);
         }
     });
-    // syncing view changes  functionality
+
+    // Sync Perspective View
     LINK.bind('client-set-slicetype', function (data) {
         setSliceType(data['view_number'], currentThis);
     });
-    // syncing undo functionality
+
+    // Sync Slice View
+    LINK.bind('client-receive-wheel', function (data) {
+        console.log(data["data"]["mouse_args"])
+        var m = data["data"]["mouse_args"]
+        var u = data["data"]["canvas_info"]
+        m.deltaY < 0 ? currentThis.nv.sliceScroll2D(-.01, m.clientX - u.left, m.clientY - u.top) : currentThis.nv.sliceScroll2D(.01, m.clientX - u.left, m.clientY - u.top)
+    });
+
+    // Sync Undo
     LINK.bind('client-undo', function (data) {
         currentThis.nv.drawUndo();
         currentThis.currentDrawData.pop()
     });
 
-
-    // client sync on join
+    // Sync Client on Join
     LINK.bind('client-sync-needed', (item) => {
         if (item.isNeeded) {
             LINK.trigger('client-sync-onjoin', {
@@ -317,6 +337,7 @@ RealTimeDrawer.prototype.connect = function () {
             })
         }
     });
+
     LINK.bind('client-sync-onjoin', (item) => {
         try {
             jSuites.loading.show();
