@@ -239,9 +239,19 @@ RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
                 currentThis.drawOnPusherTrigger(ele, currentThis);
             });
         }
+
+        if (data?.thisMM) {
+            currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data?.thisMM);
+
+        }
+        currentThis.nv.drawScene();
+        currentThis.nv.createOnLocationChange();
+
+
         currentThis.isNewUser = false;
     }
 }
+
 
 RealTimeDrawer.prototype.connect = function () {
     var channelname = 'cs410';
@@ -284,7 +294,8 @@ RealTimeDrawer.prototype.connect = function () {
         if (item.isNeeded) {
             LINK.trigger('client-sync-onjoin', {
                 'currentDrawData': currentThis.currentDrawData,
-                'view': currentThis.viewer.view
+                'view': currentThis.viewer.view,
+                'thisMM': currentThis.nv.frac2mm(currentThis.nv.scene.crosshairPos),
             })
         }
     });
