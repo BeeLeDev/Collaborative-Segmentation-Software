@@ -4,6 +4,7 @@ class RealTimeDrawer {
         this.viewer = viewer;
         this.prevColor = 1; // previous selected color
         this.setUpInteraction();
+        this.setupDrawOpacity();
         this.currentDrawData = [];
         this.isFilled = false;
         this.last_drawing = [];
@@ -37,6 +38,24 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
             nvobj.setPenValue(colorlist[this.color], this.isFilled); // setting color value
         }
     });
+}
+
+RealTimeDrawer.prototype.setupDrawOpacity = function () {
+    this.nv.drawOpacity = 0.8;
+    this.opacityWrapper = document.getElementById("currentOpacity");
+    this.opacityLabel = this.opacityWrapper.children.namedItem("opacityLabel");
+
+    this.opacityLabel.innerHTML = this.nv.drawOpacity;
+    this.opacitySlider = this.opacityWrapper.children.namedItem("opacitySlider");
+
+    this.opacitySlider.oninput = (e) => {
+        this.nv.drawOpacity = e.target.value;
+        this.opacityLabel.innerHTML = this.nv.drawOpacity;
+    }
+
+    this.opacitySlider.onchange = (e) => {
+        this.nv.updateGLVolume();
+    }
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
@@ -76,7 +95,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         this.viewer.changeView()
 
         // view sync (it is turned on by default)
-        //LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
+        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
     }
     // Ctrl + Z - Undo Previous Annotation
     else if (e.keyCode == 90 && e.ctrlKey) {
@@ -167,7 +186,6 @@ RealTimeDrawer.prototype.enable_disable_Erasing = function () {
 RealTimeDrawer.prototype.saveDrawing = function () {
     var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
     var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
-
 
     //this.nv.saveImage("draw.nii", true);
     this.nv.saveDocument(filenameWithoutExtension + ".drawing.nvd");

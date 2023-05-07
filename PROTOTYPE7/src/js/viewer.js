@@ -19,10 +19,7 @@ class Viewer {
       visible: true
     }];
 
-    nv.drawOpacity = 1.0;
     this.view = 1;
-
-
   }
 };
 
