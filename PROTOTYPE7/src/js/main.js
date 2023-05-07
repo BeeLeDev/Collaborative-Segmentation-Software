@@ -1,4 +1,3 @@
-
 window.onload = function () {
 
     var url = 'https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz';
@@ -17,7 +16,7 @@ window.onload = function () {
 
     async function loadView() {
         await v.initialize().then(() => {
-            console.log("succesful")
+            console.log("Successful Load")
             jSuites.loading.show();
             const d = new RealTimeDrawer(v);
         }).catch(err => console.log("error:: ", err))

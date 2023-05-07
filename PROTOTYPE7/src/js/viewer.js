@@ -28,7 +28,7 @@ class Viewer {
 
 Viewer.prototype.initialize = async function () {
   await this.nv.loadVolumes(this.data).then(() => {
-    console.log("done!!")
+    console.log("Done Initalizing")
   }).catch(err => console.log("error loading url", err));
 }
 

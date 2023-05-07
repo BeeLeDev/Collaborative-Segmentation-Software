@@ -1,5 +1,3 @@
-
-
 class RealTimeDrawer {
     constructor(viewer) {
         this.nv = viewer.nv; // NiiVue object
@@ -11,25 +9,27 @@ class RealTimeDrawer {
         this.last_drawing = [];
         this.position = null;
         this.isNewUser = true;
-        this.isDrawing = false;
-        this.isErasing = false;
+        this.isDrawing = false; // drawing flag
+        this.isErasing = false; // erasing flag
     }
 }
-RealTimeDrawer.prototype.setUpInteraction = function () {
 
+// initial setup when opening website
+RealTimeDrawer.prototype.setUpInteraction = function () {
     this.nv.onLocationChange = function (e) {
         this.position = e['vox'];
     }.bind(this);
 
     const element = document.getElementById('viewer');
-
     element.onmousemove = this.onMouseMove.bind(this);
     element.onmouseup = this.onMouseUp.bind(this);
     element.onkeydown = this.onKeyDown.bind(this);
+
     this.connect();
 
     let nvobj = this.nv;
     nvobj.setPenValue(1, this.isFilled); // initializing for color red
+
     $(".colorPickSelector").colorPick({
         'initialColor': "#FF0000", // initial color in pallete
         'onColorSelected': function () {
@@ -42,7 +42,8 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.isFilled) {
         this.draw()
-    } else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
+    } 
+    else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         this.last_drawing.push(pt)
     }
@@ -50,7 +51,6 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.nv.opts.penValue > 0) {
         this.prevColor = this.nv.opts.penValue;
     }
-
 };
 
 RealTimeDrawer.prototype.onMouseUp = function (e) {
@@ -63,8 +63,6 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
         LINK.trigger('client-receive', shareObj);
     }
     this.last_drawing = [];
-
-
 };
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
@@ -92,6 +90,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     }
     // Ctrl + B - Save Drawing as .png (Current Image Slice + Annotations)
     else if (e.keyCode == 66 && e.ctrlKey) {
+        e.preventDefault();
         this.saveScreenshot()
     }
     // E - Toggle Erase Tool
@@ -122,7 +121,6 @@ RealTimeDrawer.prototype.enable_disable_Drawing = function () {
     // toggle drawing
     this.isDrawing = !this.isDrawing;
 
-    // changes text in HTML
     if (this.isDrawing) {
         this.nv.setDrawingEnabled(true);
 
@@ -161,21 +159,25 @@ RealTimeDrawer.prototype.enable_disable_Erasing = function () {
     }
     else {
         this.nv.setDrawingEnabled(false);
-        
+
         this.toggleErasing.innerHTML = "Disabled";
     }
-
-
 }
 
 RealTimeDrawer.prototype.saveDrawing = function () {
+    var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
+    var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
+
+
     //this.nv.saveImage("draw.nii", true);
-    this.nv.saveDocument("niivue.drawing.nvd");
-    return;
+    this.nv.saveDocument(filenameWithoutExtension + ".drawing.nvd");
 };
 
 RealTimeDrawer.prototype.saveScreenshot = function () {
-    this.nv.saveScene("niivue.png")
+    var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
+    var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
+
+    this.nv.saveScene(filenameWithoutExtension + ".png")
 };
 
 RealTimeDrawer.prototype.draw = function () {
