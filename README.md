@@ -6,25 +6,18 @@ A browser-based online annotation tool for 3D medical image volumes that allow a
 [Documentation](https://docs.google.com/document/d/1Uaem2g6G0NlGJlJqjM-i8PanefAxztO0YBLZMPwWLlQ/edit?usp=sharing)
 
 ## Prototypes
-  1. Prototype 1
-       * [Demo](https://lahasyakr.github.io/collaborative_paintapp/)
-  2. Prototype 2
-       * [Demo](https://lahasyakr.github.io/DrawusingNiivue/)
+  1. [Prototype 1](https://lahasyakr.github.io/collaborative_paintapp/)
+  2. [Prototype 2](https://lahasyakr.github.io/DrawusingNiivue/)
   3. Prototype 3
-  4. Pusher Example
-       * [Demo](https://oopsuwu.github.io/MGH/Pusher_Example/indexDraw-v1.1.html)
-  5. Prototype 4
-       * [Demo](https://oopsuwu.github.io/MGH/PROTOTYPE4/)
-  6. Prototype 5
-       * [Demo](https://oopsuwu.github.io/MGH/PROTOTYPE5/)
-  7. Prototype 6
-       * [Demo](https://oopsuwu.github.io/MGH/PROTOTYPE6/)
+  4. [Pusher Example](https://oopsuwu.github.io/MGH/Pusher_Example/indexDraw-v1.1.html)
+  5. [Prototype 4](https://oopsuwu.github.io/MGH/PROTOTYPE4/)
+  6. [Prototype 5](https://oopsuwu.github.io/MGH/PROTOTYPE5/)
+  7. [Prototype 6](https://oopsuwu.github.io/MGH/PROTOTYPE6/)
        * External Image Data URL:      
          1. https://oopsuwu.github.io/MGH/PROTOTYPE6/?data=https://oopsuwu.github.io/MGH/PROTOTYPE6/samples/FLAIR.nii.gz
          2. https://oopsuwu.github.io/MGH/PROTOTYPE6/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
           
-  8. Prototype 7
-       * [Demo](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
+  8. [Prototype 7](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
        * External Image Data URL:          
          1. https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
          2. https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
