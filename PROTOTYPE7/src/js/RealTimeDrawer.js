@@ -11,8 +11,8 @@ class RealTimeDrawer {
         this.last_drawing = [];
         this.position = null;
         this.isNewUser = true;
-        this.isErasing = false; // erasing flag
-
+        this.isDrawing = false;
+        this.isErasing = false;
     }
 }
 RealTimeDrawer.prototype.setUpInteraction = function () {
@@ -34,10 +34,9 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
         'initialColor': "#FF0000", // initial color in pallete
         'onColorSelected': function () {
             this.element.css({ 'backgroundColor': this.color, 'color': this.color });
-            nvobj.setPenValue(colorlist[this.color], this.isFilled); // settign color value
+            nvobj.setPenValue(colorlist[this.color], this.isFilled); // setting color value
         }
     });
-
 }
 
 RealTimeDrawer.prototype.onMouseMove = function (e) {
@@ -95,8 +94,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     }
     // E - Toggle Erase Tool
     else if (e.keyCode == 69) {
-        this.nv.setDrawingEnabled(true);
-        this.nv.setPenValue(0);
+        this.enable_disable_Erasing();
     }
     // 1 - Zoom Mode
     else if (e.keyCode == 49) {
@@ -119,24 +117,53 @@ RealTimeDrawer.prototype.enable_disable_Drawing = function () {
     this.toggleDrawing = document.getElementById("toggleDrawing");
     this.toggleErasing = document.getElementById("toggleErasing");
 
-    // selects the color previously chosen
-    if (this.nv.opts.penValue == 0) {
-        this.nv.setPenValue(this.prevColor);
-        return;
-    }
-
-    // allow user to draw
-    this.nv.setDrawingEnabled(!this.nv.opts.drawingEnabled);
+    // toggle drawing
+    this.isDrawing = !this.isDrawing;
 
     // changes text in HTML
-    if (this.nv.opts.drawingEnabled) {
+    if (this.isDrawing) {
+        this.nv.setDrawingEnabled(true);
+
+        // selects the color previously chosen
+        if (this.nv.opts.penValue == 0) {
+            this.nv.setPenValue(this.prevColor);
+        }
+
         this.toggleDrawing.innerHTML = "Enabled";
+
+        this.isErasing = false;
         this.toggleErasing.innerHTML = "Disabled";
     }
     else {
+        this.nv.setDrawingEnabled(false);
+
         this.toggleDrawing.innerHTML = "Disabled";
-        this.toggleErasing.innerHTML = "Enabled";
     }
+}
+
+RealTimeDrawer.prototype.enable_disable_Erasing = function () {
+    this.toggleDrawing = document.getElementById("toggleDrawing");
+    this.toggleErasing = document.getElementById("toggleErasing");
+
+    // toggle erasing
+    this.isErasing = !this.isErasing;
+
+    if (this.isErasing) {
+        this.nv.setDrawingEnabled(true)
+        this.nv.setPenValue(0);
+
+        this.toggleErasing.innerHTML = "Enabled";
+
+        this.isDrawing = false;
+        this.toggleDrawing.innerHTML = "Disabled";
+    }
+    else {
+        this.nv.setDrawingEnabled(false);
+        
+        this.toggleErasing.innerHTML = "Disabled";
+    }
+
+
 }
 
 RealTimeDrawer.prototype.saveDrawing = function () {
