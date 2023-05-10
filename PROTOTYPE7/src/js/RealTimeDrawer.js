@@ -65,7 +65,19 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     } 
     else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
-        this.last_drawing.push(pt)
+        // optimizing array push by discarding duplicate points
+        if (this.last_drawing.length == 0)
+            this.last_drawing.push(pt)
+        else {
+            var match = false
+            this.last_drawing.forEach(x => {
+                if (pt[0] == x[0] && pt[1] == x[1] && pt[2] == x[2]) {
+                    match = true
+                    return;
+                }
+            })
+            if (!match) this.last_drawing.push(pt)
+        }
     }
 
     if (this.nv.opts.penValue > 0) {
