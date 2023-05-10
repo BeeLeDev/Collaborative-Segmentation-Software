@@ -3,14 +3,14 @@
 </p>
 
 ## Overview
-A browser-based online annotation tool for 3D medical image volumes that allow annotations to be shared between users. The sharing feature allows images to be viewed in multiple browsers concurrently, and can sync viewing perspectives and drawings. For a shared viewing experience, changes made to a volume/image are updated automatically when a drawing is finished or a view is changed.
+A browser-based online annotation tool for 3D medical image volumes that allow annotations to be shared between users. The sharing feature allows images to be viewed across multiple users concurrently, and can sync viewing perspectives and drawings. For a shared viewing experience, changes made to a volume/image are updated automatically when a drawing is finished or a slice is changed.
 
 [Website](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
 
 [Documentation](https://docs.google.com/document/d/1Uaem2g6G0NlGJlJqjM-i8PanefAxztO0YBLZMPwWLlQ/edit?usp=sharing)
 
 ## Features
-The MGH projects contains 3 types of synchronization features for easy collaboration:
+The MGH project contains 3 types of synchronization features for easy collaboration:
 - Annotation Sync<br><br>
 <img src="readme_images/annotate-sync.gif"><br><br>
 - Perspective View Sync<br><br>
@@ -23,8 +23,8 @@ The MGH projects contains 3 types of synchronization features for easy collabora
 
 - Drag and drop the [supported image](#supported-images) from your local drive into the website
   - Works with .drawing.nvd file saved after annotating
-- Upload file with URL
-  - Type '?data=' after the URL from our website, then paste the link of your medical file
+- Through the URL parameter
+  - Parameter data takes URL of supported images. Default image is loaded if not found any images from URL.
   - Examples
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
