@@ -24,7 +24,7 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 - Drag and drop the [supported image](#supported-images) from your local drive into the website
   - Works with .drawing.nvd file saved after annotating
 - Through the URL parameter
-  - Using URL parameter data take URL of supported images. Default image is loaded if not found any images from URL.
+  - Parameter data takes URL of supported images. Default image is loaded if not found any images from URL.
   - Examples
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
