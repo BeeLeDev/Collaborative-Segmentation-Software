@@ -88,6 +88,7 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
 RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     this.position = [];
+
     if (this.nv.opts.penValue >= 0 && this.nv.opts.drawingEnabled && this.last_drawing.length > 0) {
         let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
@@ -101,8 +102,10 @@ RealTimeDrawer.prototype.onWheel = function (m) {
     var u = this.nv.canvas.getBoundingClientRect();
     var data = {
         "mouse_args": { "deltaY": m.deltaY, "clientX": m.clientX, "clientY": m.clientY },
-        "canvas_info": { "left": u.left, "top": u.top }
+        "canvas_info": { "left": u.left, "top": u.top },
+        "thisMM" :this.nv.frac2mm(this.nv.scene.crosshairPos)
     }
+
     LINK.trigger('client-receive-wheel', { "data": data });
 }
 
@@ -117,7 +120,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
         this.viewer.changeView()
 
         // view sync (it is turned on by default)
-        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view });
+        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view,"thisMM" :this.nv.frac2mm(this.nv.scene.crosshairPos) });
     }
     // Ctrl + Z - Undo Previous Annotation
     else if (e.keyCode == 90 && e.ctrlKey) {
@@ -323,14 +326,18 @@ RealTimeDrawer.prototype.connect = function () {
     // Sync Perspective View
     LINK.bind('client-set-slicetype', function (data) {
         setSliceType(data['view_number'], currentThis);
+        currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data['thisMM']);
+        currentThis.nv.drawScene();
+        currentThis.nv.createOnLocationChange();
     });
 
     // Sync Slice View
     LINK.bind('client-receive-wheel', function (data) {
-        console.log(data["data"]["mouse_args"])
         var m = data["data"]["mouse_args"]
         var u = data["data"]["canvas_info"]
-        m.deltaY < 0 ? currentThis.nv.sliceScroll2D(-.01, m.clientX - u.left, m.clientY - u.top) : currentThis.nv.sliceScroll2D(.01, m.clientX - u.left, m.clientY - u.top)
+        currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data["data"]["thisMM"]);
+        currentThis.nv.drawScene();
+        currentThis.nv.createOnLocationChange();
     });
 
     // Sync Undo
