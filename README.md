@@ -25,7 +25,7 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 - Drag and drop the [supported image](#supported-images) from your local drive into the website
   - Works with .drawing.nvd file saved after annotating
 - Upload file through URL
-  - Parameter 'data' takes a URL of the [supported image](#supported-images).
+  - Parameter 'data' takes a URL of the [supported image](#supported-images)
   - A default image is loaded if no file is found in the URL
   - Type '?data=' after the URL from our website, then paste the link of a medical file
   - Examples
@@ -57,4 +57,3 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 | Mesh Overlay | GIfTI, CIfTI-2, MZ3, SMP, STC, FreeSurfer (CURV/ANNOT)                                                                    |
 | Tractography | TCK, TRK, TRX, VTK, AFNI .niml.tract                                                                                      |
 | DICOM        | DICOM, DICOM Manifests                                                                                                    |
-
