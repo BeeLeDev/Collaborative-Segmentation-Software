@@ -25,9 +25,9 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 - Drag and drop the [supported image](#supported-images) from your local drive into the website
   - Works with .drawing.nvd file saved after annotating
 - Upload file through URL
-  - Parameter 'data' takes a URL of the [supported image](#supported-images). 
-  - Default image is loaded if not found any images from URL
-  - Type '?data=' after the URL from our website, then paste the link of a medical fileURL.
+  - Parameter 'data' takes a URL of the [supported image](#supported-images).
+  - A default image is loaded if no file is found in the URL
+  - Type '?data=' after the URL from our website, then paste the link of a medical file
   - Examples
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
     - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
