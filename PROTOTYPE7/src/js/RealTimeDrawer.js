@@ -1,3 +1,10 @@
+
+var RT = RT || {};
+RT.isConnected = false;
+RT.pusher = null;
+RT.channel = null;
+RT.LINK = null;
+
 class RealTimeDrawer {
     constructor(viewer) {
         this.nv = viewer.nv; // NiiVue object
@@ -27,7 +34,6 @@ RealTimeDrawer.prototype.setUpInteraction = function () {
     element.onkeydown = this.onKeyDown.bind(this);
     element.onwheel = this.onWheel.bind(this);
 
-    this.connect();
 
     let nvobj = this.nv;
     nvobj.setPenValue(1, this.isFilled); // initializing for color red
@@ -62,7 +68,7 @@ RealTimeDrawer.prototype.setupDrawOpacity = function () {
 RealTimeDrawer.prototype.onMouseMove = function (e) {
     if (this.isFilled) {
         this.draw()
-    } 
+    }
     else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         // optimizing array push by discarding duplicate points
@@ -93,7 +99,9 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
         let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
         // send via pusher
-        LINK.trigger('client-receive', shareObj);
+        if (RT.isConnected) {
+            RT.LINK.trigger('client-receive', shareObj);
+        }
     }
     this.last_drawing = [];
 };
@@ -103,34 +111,44 @@ RealTimeDrawer.prototype.onWheel = function (m) {
     var data = {
         "mouse_args": { "deltaY": m.deltaY, "clientX": m.clientX, "clientY": m.clientY },
         "canvas_info": { "left": u.left, "top": u.top },
-        "thisMM" :this.nv.frac2mm(this.nv.scene.crosshairPos)
+        "thisMM": this.nv.frac2mm(this.nv.scene.crosshairPos)
     }
-
-    LINK.trigger('client-receive-wheel', { "data": data });
+    if (RT.isConnected) {
+        RT.LINK.trigger('client-receive-wheel', { "data": data });
+    }
 }
 
 RealTimeDrawer.prototype.onKeyDown = function (e) {
     // Hotkeys
     // D - Toggle Drawing Tool
     if (e.keyCode == 68) {
-        this.enable_disable_Drawing();
+        this.enableDisableDrawing();
     }
     // Space - Cycle Image Perspective
     else if (e.code == 'Space') {
         this.viewer.changeView()
 
         // view sync (it is turned on by default)
-        LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view,"thisMM" :this.nv.frac2mm(this.nv.scene.crosshairPos) });
+        if (RT.isConnected) {
+            RT.LINK.trigger('client-set-slicetype', { 'view_number': this.viewer.view, "thisMM": this.nv.frac2mm(this.nv.scene.crosshairPos) });
+        }
     }
     // Ctrl + Z - Undo Previous Annotation
-    else if (e.keyCode == 90 && e.ctrlKey) {
+    else if (e.ctrlKey && e.keyCode == 90) {
         this.nv.drawUndo();
-        this.currentDrawData.pop()
-        LINK.trigger('client-undo', {});
+        //this.currentDrawData.pop()
+        if (RT.isConnected) {
+            RT.LINK.trigger('client-undo', { 'undo': true });
+        }
     }
     // Ctrl + Y - Save Drawing as .nvd (Medical Volume + Annotations)
     else if (e.keyCode == 89 && e.ctrlKey) {
-        this.saveDrawing()
+        this.saveDrawing('nvd')
+    }
+
+    // Ctrl + Q - Save Drawing as .nii (Annotations)
+    else if (e.keyCode == 81 && e.ctrlKey) {
+        this.saveDrawing('nifti')
     }
     // Ctrl + B - Save Drawing as .png (Current Image Slice + Annotations)
     else if (e.keyCode == 66 && e.ctrlKey) {
@@ -139,7 +157,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
     }
     // E - Toggle Erase Tool
     else if (e.keyCode == 69) {
-        this.enable_disable_Erasing();
+        this.enableDisableErasing();
     }
     // 1 - Zoom Mode
     else if (e.keyCode == 49) {
@@ -158,7 +176,7 @@ RealTimeDrawer.prototype.onKeyDown = function (e) {
 }
 
 
-RealTimeDrawer.prototype.enable_disable_Drawing = function () {
+RealTimeDrawer.prototype.enableDisableDrawing = function () {
     this.toggleDrawing = document.getElementById("toggleDrawing");
     this.toggleErasing = document.getElementById("toggleErasing");
 
@@ -185,7 +203,7 @@ RealTimeDrawer.prototype.enable_disable_Drawing = function () {
     }
 }
 
-RealTimeDrawer.prototype.enable_disable_Erasing = function () {
+RealTimeDrawer.prototype.enableDisableErasing = function () {
     this.toggleDrawing = document.getElementById("toggleDrawing");
     this.toggleErasing = document.getElementById("toggleErasing");
 
@@ -208,12 +226,16 @@ RealTimeDrawer.prototype.enable_disable_Erasing = function () {
     }
 }
 
-RealTimeDrawer.prototype.saveDrawing = function () {
+RealTimeDrawer.prototype.saveDrawing = function (type) {
     var filenameWithExtension = this.viewer.data[0].url.split('/').pop(); // "visiblehuman.nii.gz"
     var filenameWithoutExtension = filenameWithExtension.split('.').shift(); // "visiblehuman"
 
-    //this.nv.saveImage("draw.nii", true);
-    this.nv.saveDocument(filenameWithoutExtension + ".drawing.nvd");
+    if (type === 'nvd') {
+        this.nv.saveDocument(filenameWithoutExtension + ".drawing.nvd");
+    } else if (type === 'nifti') {
+        this.nv.saveImage(filenameWithoutExtension + ".drawing.nii", true);
+    }
+
 };
 
 RealTimeDrawer.prototype.saveScreenshot = function () {
@@ -273,11 +295,16 @@ RealTimeDrawer.prototype.setSliceType = function (data, currentThis) {
     currentThis.viewer.view = data
 }
 
-RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
+RealTimeDrawer.prototype.syncOnJoin = function (data, currentThis) {
     if (currentThis.isNewUser) {
         let newDataLength = data.currentDrawData?.length;
-        currentThis.setSliceType(data.view, currentThis)
-        if (newDataLength > currentThis.currentDrawData?.length) {
+        currentThis.setSliceType(data.view, currentThis);
+        if (newDataLength > 0) {
+            currentThis.nv.createEmptyDrawing();
+            currentThis.currentDrawData = [];
+
+
+
             data.currentDrawData.forEach(ele => {
                 currentThis.drawOnPusherTrigger(ele, currentThis);
             });
@@ -296,94 +323,110 @@ RealTimeDrawer.prototype.SyncOnJoin = function (data, currentThis) {
 }
 
 
-RealTimeDrawer.prototype.connect = function () {
-    var channelname = 'cs410';
+RealTimeDrawer.prototype.connect = function (e) {
+    if (!RT.isConnected) {
+        var channelname = 'cs410';
 
-    console.log('Linking via channel ' + channelname + '...');
+        console.log('Linking via channel ' + channelname + '...');
 
-    // Pusher.logToConsole = true; // for debugging
+        // Pusher.logToConsole = true; // for debugging
 
-    const pusher = new Pusher('bb9db0457c7108272899', {
-        cluster: 'us2',
-        userAuthentication: { endpoint: "https://x.babymri.org/auth.php" },
-        authEndpoint: "https://x.babymri.org/auth.php"
-    });
+        RT.pusher = new Pusher('bb9db0457c7108272899', {
+            cluster: 'us2',
+            userAuthentication: { endpoint: "https://x.babymri.org/auth.php" },
+            authEndpoint: "https://x.babymri.org/auth.php",
+            disableStats: false,
+            enabledTransports: ['ws', 'wss']
+        });
 
-    var channel = 'private-' + channelname;
-    LINK = pusher.subscribe(channel);
-    let drawtoSubscibers = this.drawOnPusherTrigger;
-    let setSliceType = this.setSliceType;
-    let currentThis = this;
-    let SyncOnJoin = this.SyncOnJoin;
+        RT.channel = 'private-' + channelname;
+        RT.LINK = RT.pusher.subscribe(RT.channel);
+        let drawtoSubscibers = e.data.draw.drawOnPusherTrigger;
+        let setSliceType = e.data.draw.setSliceType;
+        let currentThis = e.data.draw;
+        let syncOnJoin = e.data.draw.syncOnJoin;
 
-    // Sync Annotations
-    LINK.bind('client-receive', (data) => {
-        if (data && data['drawing'].length > 0) {
-            drawtoSubscibers(data, currentThis);
-        }
-    });
+        // Sync Annotations
+        RT.LINK.bind('client-receive', (data) => {
+            if (data && data['drawing'].length > 0) {
+                drawtoSubscibers(data, currentThis);
+            }
+        });
 
-    // Sync Perspective View
-    LINK.bind('client-set-slicetype', function (data) {
-        setSliceType(data['view_number'], currentThis);
-        currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data['thisMM']);
-        currentThis.nv.drawScene();
-        currentThis.nv.createOnLocationChange();
-    });
+        // Sync Perspective View
+        RT.LINK.bind('client-set-slicetype', function (data) {
+            setSliceType(data['view_number'], currentThis);
+            currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data['thisMM']);
+            currentThis.nv.drawScene();
+            currentThis.nv.createOnLocationChange();
+        });
 
-    // Sync Slice View
-    LINK.bind('client-receive-wheel', function (data) {
-        var m = data["data"]["mouse_args"]
-        var u = data["data"]["canvas_info"]
-        currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data["data"]["thisMM"]);
-        currentThis.nv.drawScene();
-        currentThis.nv.createOnLocationChange();
-    });
+        // Sync Slice View
+        RT.LINK.bind('client-receive-wheel', function (data) {
+            var m = data["data"]["mouse_args"]
+            var u = data["data"]["canvas_info"]
+            currentThis.nv.scene.crosshairPos = currentThis.nv.mm2frac(data["data"]["thisMM"]);
+            currentThis.nv.drawScene();
+            currentThis.nv.createOnLocationChange();
+        });
 
-    // Sync Undo
-    LINK.bind('client-undo', function (data) {
-        currentThis.nv.drawUndo();
-        currentThis.currentDrawData.pop()
-    });
+        // Sync Undo
+        RT.LINK.bind('client-undo', function (data) {
+            currentThis.nv.drawUndo();
+            //currentThis.currentDrawData.pop()
+        });
 
-    // Sync Client on Join
-    LINK.bind('client-sync-needed', (item) => {
-        if (item.isNeeded) {
-            LINK.trigger('client-sync-onjoin', {
-                'currentDrawData': currentThis.currentDrawData,
-                'view': currentThis.viewer.view,
-                'thisMM': currentThis.nv.frac2mm(currentThis.nv.scene.crosshairPos),
-            })
-        }
-    });
+        // Sync Client on Join
+        RT.LINK.bind('client-sync-needed', (item) => {
+            if (item.isNeeded) {
+                RT.LINK.trigger('client-sync-onjoin', {
+                    'currentDrawData': currentThis.currentDrawData.slice(0, currentThis.nv.currentDrawUndoBitmap + 1),
+                    'view': currentThis.viewer.view,
+                    'thisMM': currentThis.nv.frac2mm(currentThis.nv.scene.crosshairPos),
+                })
+            }
+        });
 
-    LINK.bind('client-sync-onjoin', (item) => {
-        try {
-            jSuites.loading.show();
-            SyncOnJoin(item, currentThis);
-        } finally {
-            jSuites.loading.hide();
-        }
+        RT.LINK.bind('client-sync-onjoin', (item) => {
+            try {
+                jSuites.loading.show();
+                syncOnJoin(item, currentThis);
+            } finally {
+                jSuites.loading.hide();
+            }
 
-    });
+        });
 
-    LINK.bind('pusher:subscription_succeeded', () => {
-        try {
-            currentThis.isNewUser = true;
-            jSuites.loading.show();
-            LINK.trigger('client-sync-needed', {
-                'isNeeded': true
-            });
-        } catch (err) {
-            jSuites.loading.hide();
-        }
+        RT.LINK.bind('pusher:subscription_succeeded', () => {
+            try {
+                currentThis.isNewUser = true;
+                jSuites.loading.show();
+                RT.LINK.trigger('client-sync-needed', {
+                    'isNeeded': true
+                });
+            } catch (err) {
+                jSuites.loading.hide();
+            }
 
-        setTimeout(function () {
-            // Hide
-            jSuites.loading.hide();
-        }, 2000);
+            setTimeout(function () {
+                // Hide
+                jSuites.loading.hide();
+            }, 2000);
 
-    });
+        });
+
+        RT.isConnected = true;
+        $('#linklogo').hide();
+        $('#linkselectedlogo').show();
+    }
+    else {
+        RT.pusher.unsubscribe(RT.channel)
+        RT.isConnected = false;
+
+        // switch to the gray icon
+        $('#linkselectedlogo').hide();
+        $('#linklogo').show();
+    }
 
 
 };
