@@ -1,17 +1,19 @@
-<p align="center">
-  <img src="readme_images/mgh_logo.png">
-</p>
-
 ## Overview
 ### Collaborative Segmentation Software
 A browser-based online annotation tool for 3D medical image volumes that allow annotations to be shared between users. The sharing feature allows images to be viewed across multiple users concurrently, and can sync viewing perspectives and drawings. For a shared viewing experience, changes made to a volume/image are updated automatically when a drawing is finished or a slice is changed.
+
+The software utilizes Pusher, which eliminates the need for a server to handle real-time functionality.
 
 [Website](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
 
 [Documentation](https://docs.google.com/document/d/1Uaem2g6G0NlGJlJqjM-i8PanefAxztO0YBLZMPwWLlQ/edit?usp=sharing)
 
+## Technologies
+- [NiiVue](https://github.com/niivue/niivue)
+- [Pusher](https://pusher.com/)
+
 ## Features
-The MGH project contains 3 types of synchronization features for easy collaboration:
+The software contains 3 types of synchronization features for easy collaboration:
 - Annotation Sync<br><br>
 <img src="readme_images/annotate-sync.gif"><br><br>
 - Perspective View Sync<br><br>
@@ -60,3 +62,9 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 | Mesh Overlay | GIfTI, CIfTI-2, MZ3, SMP, STC, FreeSurfer (CURV/ANNOT)                                                                    |
 | Tractography | TCK, TRK, TRX, VTK, AFNI .niml.tract                                                                                      |
 | DICOM        | DICOM, DICOM Manifests                                                                                                    |
+
+<p align="center">
+  <img src="readme_images/umb-logo.png"><br><br>
+  <img src="readme_images/mgh-logo.png">
+</p>
+
