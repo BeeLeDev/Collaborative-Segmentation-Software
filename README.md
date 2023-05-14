@@ -3,6 +3,7 @@
 </p>
 
 ## Overview
+### Collaborative Segmentation Software
 A browser-based online annotation tool for 3D medical image volumes that allow annotations to be shared between users. The sharing feature allows images to be viewed across multiple users concurrently, and can sync viewing perspectives and drawings. For a shared viewing experience, changes made to a volume/image are updated automatically when a drawing is finished or a slice is changed.
 
 [Website](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
@@ -43,11 +44,13 @@ The MGH project contains 3 types of synchronization features for easy collaborat
 | Change View    | Changes the canvas to display different perspectives of the 3D medical image |
 | Undo           | Removes the latest annotation created                                        |
 | Save .nvd      | Saves the medical image with annotations, can be uploaded to re-annotate     |
+| Save .nii      | Saves the annotations only                                                   |
 | Save .png      | Saves the current image slice with annotations                               |
 | Opacity Slider | Changes opacity of the annotations: 0 - Clear, 1 - Opaque                    |
 | Slice Cycle    | Changes the canvas to display different slices of the 3D medical image       |
 | Zoom           | Move closer or further from the canvas                                       |
 | Measure        | Measures length from the starting to ending point with units in millimeters  |
+| Sync View      | Enables and disables both annotation and image view sync                     |
 
 ## Supported Images
 | Formats      | File Type                                                                                                                 |
