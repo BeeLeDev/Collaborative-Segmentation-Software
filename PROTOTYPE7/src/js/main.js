@@ -17,10 +17,12 @@ window.onload = function () {
     async function loadView() {
         await v.initialize().then(() => {
             console.log("Successful Load")
-            jSuites.loading.show();
+            //jSuites.loading.show();
             const d = new RealTimeDrawer(v);
+            $('#linklogo').bind('click', { draw: d }, d.connect);
+            $('#linkselectedlogo').bind('click', { draw: d }, d.connect);
         }).catch(err => console.log("error:: ", err))
-            .finally(jSuites.loading.hide())
+           // .finally(jSuites.loading.hide())
     }
 
     loadView();
