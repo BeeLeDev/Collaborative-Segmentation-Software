@@ -4,7 +4,7 @@ A browser-based online annotation tool for 3D medical image volumes that allow a
 
 The software utilizes Pusher, which eliminates the need for a server to handle real-time functionality.
 
-[Website](https://oopsuwu.github.io/MGH/PROTOTYPE7/)
+[Website](https://oopsuwu.github.io/Collaborative-Segmentation-Software/)
 
 [Documentation](https://docs.google.com/document/d/1Uaem2g6G0NlGJlJqjM-i8PanefAxztO0YBLZMPwWLlQ/edit?usp=sharing)
 
@@ -32,8 +32,8 @@ The software contains 3 types of synchronization features for easy collaboration
   - A default image is loaded if no file is found in the URL
   - Type '?data=' after the URL from our website, then paste the link of a medical file
   - Examples
-    - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://oopsuwu.github.io/MGH/PROTOTYPE7/samples/FLAIR.nii.gz
-    - https://oopsuwu.github.io/MGH/PROTOTYPE7/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
+    - https://oopsuwu.github.io/Collaborative-Segmentation-Software/?data=https://oopsuwu.github.io/Collaborative-Segmentation-Software//samples/FLAIR.nii.gz
+    - https://oopsuwu.github.io/Collaborative-Segmentation-Software/?data=https://niivue.github.io/niivue-demo-images/visiblehuman.nii.gz
 
 ## Settings & Controls
 <img src="readme_images/controls.png">
