@@ -14,7 +14,7 @@ class RealTimeDrawer {
         this.setupDrawOpacity();
         this.currentDrawData = [];
         this.isFilled = false;
-        this.last_drawing = [];
+        this.lastDrawing = [];
         this.position = null;
         this.isNewUser = true;
         this.isDrawing = false; // drawing flag
@@ -72,17 +72,17 @@ RealTimeDrawer.prototype.onMouseMove = function (e) {
     else if (e.buttons && this.nv.opts.drawingEnabled && this.position && this.position.length > 0) {
         let pt = [this.position[0], this.position[1], this.position[2]]
         // optimizing array push by discarding duplicate points
-        if (this.last_drawing.length == 0)
-            this.last_drawing.push(pt)
+        if (this.lastDrawing.length == 0)
+            this.lastDrawing.push(pt)
         else {
             var match = false
-            this.last_drawing.forEach(x => {
+            this.lastDrawing.forEach(x => {
                 if (pt[0] == x[0] && pt[1] == x[1] && pt[2] == x[2]) {
                     match = true
                     return;
                 }
             })
-            if (!match) this.last_drawing.push(pt)
+            if (!match) this.lastDrawing.push(pt)
         }
     }
 
@@ -95,15 +95,15 @@ RealTimeDrawer.prototype.onMouseUp = function (e) {
     this.nv.refreshDrawing();
     this.position = [];
 
-    if (this.nv.opts.penValue >= 0 && this.nv.opts.drawingEnabled && this.last_drawing.length > 0) {
-        let shareObj = { 'isFilled': this.isFilled, 'drawing': this.last_drawing, 'label': this.nv.opts.penValue };
+    if (this.nv.opts.penValue >= 0 && this.nv.opts.drawingEnabled && this.lastDrawing.length > 0) {
+        let shareObj = { 'isFilled': this.isFilled, 'drawing': this.lastDrawing, 'label': this.nv.opts.penValue };
         this.currentDrawData.push(shareObj);
         // send via pusher
         if (RT.isConnected) {
             RT.LINK.trigger('client-receive', shareObj);
         }
     }
-    this.last_drawing = [];
+    this.lastDrawing = [];
 };
 
 RealTimeDrawer.prototype.onWheel = function (m) {
@@ -248,7 +248,7 @@ RealTimeDrawer.prototype.saveScreenshot = function () {
 RealTimeDrawer.prototype.draw = function () {
     //console.log(nv.drawPenFillPts)
     if (this.nv.drawPenFillPts.length > 0) {
-        this.last_drawing = this.nv.drawPenFillPts;
+        this.lastDrawing = this.nv.drawPenFillPts;
     }
 
 };
