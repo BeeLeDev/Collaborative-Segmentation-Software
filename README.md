@@ -1,5 +1,5 @@
 ## Overview
-### Collaborative Segmentation Software
+### <a href="https://oopsuwu.github.io/Collaborative-Segmentation-Software/">Collaborative Segmentation Software</a>
 A browser-based online annotation tool for 3D medical image volumes that allow annotations to be shared between users. The sharing feature allows images to be viewed across multiple users concurrently, and can sync viewing perspectives and drawings. For a shared viewing experience, changes made to a volume/image are updated automatically when a drawing is finished or a slice is changed.
 
 The software utilizes Pusher, which eliminates the need for a server to handle real-time functionality.
